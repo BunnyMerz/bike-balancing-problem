@@ -32,18 +32,23 @@ class Dock(Entity):
         self.charges: bool = charges
 
     def __repr__(self) -> str:
-        return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): {self.bikes}>"
+        return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {self.bikes}>"
 
     @classmethod
     def distance(cls, dock_1: "Dock", dock_2: "Dock"):
         return
     @classmethod
     def euclidian_distance(cls, dock_1: "Dock", dock_2: "Dock"):
-        x = dock_1.latitude - dock_2.latitude
-        z = dock_1.longitude - dock_2.longitude
-        y = dock_1.altitude - dock_2.altitude
+        return Dock.euclidian_distance_point(dock_1, dock_2.latitude, dock_2.longitude, dock_2.altitude)
+    @classmethod
+    def euclidian_distance_point(cls, dock_1: "Dock",  latitude: float, longitude: float, altitude: float) -> float:
+        x = dock_1.latitude - latitude
+        z = dock_1.longitude - longitude
+        y = dock_1.altitude - altitude
         return (x*x + y*y + z*z)**(1/2)
 
+    def occupancy(self):
+        return len(self.bikes)/self.capacity * 100
 
     def retrieve(self, bike: Bike):
         assert len(self.bikes) < self.capacity
