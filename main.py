@@ -1,7 +1,7 @@
 from random import randint as rng
-from debug import Debug
-from bikes import Dock, Bike
-from goals import Destination, PickBike, DeliverBike
+from utils.debug import Debug
+from src.bikes import Dock, Bike
+from src.goals import Destination, PickBike, DeliverBike
 print = Debug.print
 
 
@@ -35,6 +35,24 @@ class Main:
     #########
 
     @classmethod
+    def init_from_basic(cls, docks, bikes, adj):
+        distances = []
+        y = 0
+        for adj_line in adj:
+            dis_line = []
+            x = 0
+            for adj_element in adj_line:
+                if adj_element == 0 or x == y:
+                    dis_line.append(None)
+                else:
+                    dist = Dock.euclidian_distance(docks[x], docks[y])
+                    dis_line.append(dist)
+                x += 1
+            distances.append(dis_line)
+            y += 1
+        cls.init(docks, bikes, adj, distances)
+
+    @classmethod
     def init(cls, docks, bikes, adj, distances):
         cls.docks =     docks
         cls.bikes =     bikes
@@ -42,8 +60,8 @@ class Main:
         cls.distances = distances
 
     @classmethod
-    def plot(cls, extra_points: list[tuple[int, int]]):
-        from vis import to_graph
+    def plot(cls, extra_points: list[tuple[int, int]] = []):
+        from utils.vis import to_graph
         points = [(dock.latitude, dock.longitude) for dock in cls.docks]
 
         edges = [(x+len(points),x+len(points), 0) for x in range(len(extra_points))]
@@ -151,7 +169,7 @@ def main(k: int = 5):
     docks = [
         Dock(0  , 0  , 0  , k, charges=True),
         Dock(100, 100, 0  , k, charges=True),
-        Dock(200, 200, 0  , k, charges=True),
+        Dock(200, 200, 0  , k, charges=False),
         Dock(300, 100, 100, k, charges=True),
     ]
 
@@ -161,21 +179,6 @@ def main(k: int = 5):
         [0,1,0,1],
         [1,1,1,0],
     ]
-
-    dis = []
-    y = 0
-    for adj_line in adj:
-        dis_line = []
-        x = 0
-        for adj_element in adj_line:
-            if adj_element == 0 or x == y:
-                dis_line.append(None)
-            else:
-                dist = Dock.euclidian_distance(docks[x], docks[y])
-                dis_line.append(dist)
-            x += 1
-        dis.append(dis_line)
-        y += 1
 
     bikes = []
     bk = [1,4,5,4]
@@ -188,5 +191,6 @@ def main(k: int = 5):
             dock.retrieve(bike)
         i += 1
 
-    Main.init(docks, bikes, adj, dis)
+    Main.init_from_basic(docks, bikes, adj)
+    Main.plot()
 main()
