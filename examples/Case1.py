@@ -37,8 +37,7 @@ class ChooseStartingStation:
 
             natural, suggestions = Main.find_starting_dock(60, 60, 0)
             assert natural == docks[1]
-            assert len(suggestions.suitable) == 1
-            assert suggestions.suitable == [docks[0]]
+            assert suggestions.initial_dest.suitable == [docks[0]]
 
 from utils.debug import Debug
 from src.bikes import Dock, Bike
@@ -65,7 +64,7 @@ class ChooseEndingStation:
             ]
 
             bikes = []
-            bk = [4,1,5,4]
+            bk = [1,4,5,4]
             bb = [50,20,10,100,30]
             i = 0
             for dock in docks:
@@ -77,7 +76,6 @@ class ChooseEndingStation:
 
             Main.init_from_basic(docks, bikes, adj)
 
-            natural, suggestions = Main.find_starting_dock(60, 60, 0)
+            natural, suggestions = Main.find_ending_dock(60, 60, 0, Bike(10))
             assert natural == docks[1]
-            assert len(suggestions.suitable) == 1
-            assert suggestions.suitable == [docks[0]]
+            assert suggestions.end_dest.suitable == [docks[0]]

@@ -30,7 +30,7 @@ class Destination:
         return f"<Dest[{['C/N','N','C'][self.chargable+1]}]: Capacity: {self.min_capacity}..{self.max_capacity}, Suitable: {self.suitable}>"
     
 class Goal:
-    def __init__(self, initial_dest: Destination, initial_bike: PickBike = None, sub_dest: Destination = None, bike_swap: PickBike = None, end_dest: Destination = None) -> None:
+    def __init__(self, initial_dest: Destination = None, initial_bike: PickBike = None, sub_dest: Destination = None, bike_swap: PickBike = None, end_dest: Destination = None) -> None:
         self.initial_dest: Destination = initial_dest
         self.initial_bike: PickBike    = initial_bike
         self.sub_dest:     Destination = sub_dest

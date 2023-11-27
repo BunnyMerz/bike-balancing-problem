@@ -112,7 +112,7 @@ class Main:
         return smallest, suitable
 
     @classmethod
-    def find_starting_dock(cls, lat: float, long: float, alt: float):
+    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, Goal]:
         """
         Returns the nearest dock and a destination that describes any valid suggestion along with a list of suggestions based on some parameters defined inside Main
 
@@ -131,7 +131,7 @@ class Main:
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
         suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
 
-        return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None))
+        return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable))
     
     @classmethod
     def find_strategy(cls, lat: float, long: float, alt: float, chosen_dock: Dock) -> tuple[Dock, Goal]:
@@ -172,7 +172,7 @@ class Main:
         return
 
     @classmethod
-    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike, active_goals: list[Goal]) -> tuple[Dock, list[Dock]]:
+    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, Goal]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -206,4 +206,4 @@ class Main:
                 suitable = chargeable_suitable
                 chargeable = Destination.CHARGEABLE
 
-        return natural, Goal(end_dest=Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable, must_contain_bike=None))
+        return natural, Goal(end_dest=Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable))
