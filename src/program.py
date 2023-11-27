@@ -107,16 +107,14 @@ class Main:
         return smallest, suitable
 
     @classmethod
-    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Dock]]:
+    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, Destination]:
         """
-        Returns the nearest dock and a list of suggestions based on some parameters defined inside Main
+        Returns the nearest dock and a destination that describes any valid suggestion along with a list of suggestions based on some parameters defined inside Main
 
         lat, long, alt: float
             User's current coordinates
         """
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
-        if suitable == []:
-            return natural, [] # No sugestion
         
         target_occupancy = min(
             cls.max_occupancy + cls.occupancy_maring,
@@ -128,7 +126,7 @@ class Main:
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
         suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
 
-        return natural, suitable
+        return natural, Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None)
     
     @classmethod
     def find_strategy(cls, chosen_dock: Dock) -> tuple[Dock, list[Destination]]:
@@ -165,9 +163,11 @@ class Main:
         suitable = [dock for dock in suitable if dock.occupancy() < target_occupancy][:cls.number_of_suggestions]
 
         # If bike is too low, filter all docks to chargeables, unless there are none.
+        chargeable = Destination.EITHER
         if current_bike.battery_level < cls.bike_low_batery:
             chargeable_suitable = [dock for dock in suitable if dock.charges]
             if chargeable_suitable != [] or natural.charges: # If no options are found, don't attribute it to suitable, except if the natural dock is chargeable
                 suitable = chargeable_suitable
+                chargeable = Destination.CHARGEABLE
 
-        return natural, suitable
+        return natural, Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable, must_contain_bike=None)
