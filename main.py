@@ -1,16 +1,24 @@
 from debug import Debug
 from bikes import Dock, Bike
+from goals import Destination, PickBike, DeliverBike
 print = Debug.print
 
 
 class Main:
-    docks =     []
-    bikes =     []
-    adj =       []
-    distances = []
+    docks:     list[Dock]        = []
+    bikes:     list[Bike]        = []
+    adj:       list[list[bool]]  = []
+    distances: list[list[float]] = []
 
     @classmethod
-    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Dock]]:
+    def init(cls, docks, bikes, adj, distances):
+        docks =     docks
+        bikes =     bikes
+        adj =       adj
+        distances = distances
+
+    @classmethod
+    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Destination]]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -19,14 +27,14 @@ class Main:
         """
         return
     
-    def find_strategy(cls):
+    def find_strategy(cls, chosen_dock: Dock) -> tuple[Dock, list[Destination]]:
         """
-        Returns 
+        Returns list of goals as suggestions to user
         """
         return
     
     @classmethod
-    def find_ending_dock(cls, x: float, y: float) -> tuple[Dock, list[Dock]]:
+    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, list[Destination]]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -71,4 +79,6 @@ def main(k: int = 5):
             bike = Bike()
             bikes.append(bike)
             dock.retrieve(bike)
+
+    Main.init(docks, bikes, adj, dist)
 main()
