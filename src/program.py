@@ -1,7 +1,7 @@
 from random import randint as rng
 from utils.debug import Debug
 from src.bikes import Dock, Bike
-from src.goals import Destination
+from src.goals import Destination, Goal, PickBike, DeliverBike
 print = Debug.print
 
 
@@ -21,7 +21,7 @@ class Main:
     # Represents the max occupancy a dock must have to become a suggestion
     max_occupancy = 80 # in percent %
     # Represents the occupancy a dock must have less than the target occupancy
-    occupancy_maring = 10 # in percent %
+    occupancy_margin = 10 # in percent %
     #########
     #########
 
@@ -31,6 +31,7 @@ class Main:
     #########
     # Represents the max battery a bike must have to become 'too low'
     bike_low_batery = 20 # in percent %
+    bike_high_batery = 90 # in percent %
     #########
     #########
 
@@ -107,7 +108,7 @@ class Main:
         return smallest, suitable
 
     @classmethod
-    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, Destination]:
+    def find_starting_dock(cls, lat: float, long: float, alt: float):
         """
         Returns the nearest dock and a destination that describes any valid suggestion along with a list of suggestions based on some parameters defined inside Main
 
@@ -117,8 +118,8 @@ class Main:
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
         
         target_occupancy = min(
-            cls.max_occupancy + cls.occupancy_maring,
-            natural.occupancy() + cls.occupancy_maring
+            cls.max_occupancy + cls.occupancy_margin,
+            natural.occupancy() + cls.occupancy_margin
         )
         
         # Here comes the logic for choosing what's better than the natural option
@@ -126,17 +127,47 @@ class Main:
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
         suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
 
-        return natural, Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None)
+        return natural, Goal(end_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None))
     
     @classmethod
-    def find_strategy(cls, chosen_dock: Dock) -> tuple[Dock, list[Destination]]:
+    def find_strategy(cls, lat: float, long: float, alt: float, chosen_dock: Dock) -> tuple[Dock, Goal]:
         """
         Returns list of goals as suggestions to user
         """
+        natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
+
+        available_bikes = chosen_dock.bikes
+        suitable_bikes = []
+        suitable_docks = []
+        
+        if chosen_dock.charges is False: # Doesn't charge
+            # Find low battery
+            suitable_bikes = [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
+            if suitable_bikes != []: # If there are any low batteries
+                # Find destinations that can charge that are better than the natural one
+                suitable_docks = [d for d in suitable if d.charges is True and d.occupancy < natural.occupancy()]
+                if natural.charges is True:
+                    suitable_docks += natural # Bike+Natural is part of the strategy this time
+
+        if suitable_docks != []:
+            # Simple bike deliver!
+            ## Must pick a certain type of bike
+            pb = PickBike(min_battery_level=0, max_battery_level=cls.bike_low_batery, suitable=suitable_bikes)
+            ## Must return to a certain destination
+            return natural, Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks, must_contain_bike=pb)
+
+        target_occupancy = min(
+            cls.max_occupancy + cls.occupancy_margin,
+            natural.occupancy() + cls.occupancy_margin
+        )
+
+        # Here comes the logic for choosing what's better than the natural option
+        suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
+        
         return
 
     @classmethod
-    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, list[Dock]]:
+    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike, active_goals: list[Goal]) -> tuple[Dock, list[Dock]]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -152,8 +183,8 @@ class Main:
         
 
         target_occupancy = min(
-            cls.max_occupancy - cls.occupancy_maring,
-            natural.occupancy() - cls.occupancy_maring
+            cls.max_occupancy - cls.occupancy_margin,
+            natural.occupancy() - cls.occupancy_margin
         )
         
         # Here comes the logic for choosing what's better than the natural option
