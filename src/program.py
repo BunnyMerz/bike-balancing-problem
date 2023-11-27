@@ -6,6 +6,10 @@ print = Debug.print
 
 
 class Main:
+    """
+    Capable of deciding what streategies are best and will seng fragments of them.
+    The User interace must handle users performing or not these fragements and concatenate them as needed.
+    """
     docks:     list[Dock]        = []
     bikes:     list[Bike]        = []
     adj:       list[list[bool]]  = []
@@ -127,7 +131,7 @@ class Main:
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
         suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
 
-        return natural, Goal(end_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None))
+        return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable, must_contain_bike=None))
     
     @classmethod
     def find_strategy(cls, lat: float, long: float, alt: float, chosen_dock: Dock) -> tuple[Dock, Goal]:
@@ -153,8 +157,9 @@ class Main:
             # Simple bike deliver!
             ## Must pick a certain type of bike
             pb = PickBike(min_battery_level=0, max_battery_level=cls.bike_low_batery, suitable=suitable_bikes)
+            dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks)
             ## Must return to a certain destination
-            return natural, Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks, must_contain_bike=pb)
+            return natural, Goal(initial_bike=pb, end_dest=dst)
 
         target_occupancy = min(
             cls.max_occupancy + cls.occupancy_margin,
@@ -201,4 +206,4 @@ class Main:
                 suitable = chargeable_suitable
                 chargeable = Destination.CHARGEABLE
 
-        return natural, Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable, must_contain_bike=None)
+        return natural, Goal(end_dest=Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable, must_contain_bike=None))
