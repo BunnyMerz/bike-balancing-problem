@@ -42,6 +42,24 @@ class Main:
         cls.distances = distances
 
     @classmethod
+    def plot(cls, extra_points: list[tuple[int, int]]):
+        from vis import to_graph
+        points = [(dock.latitude, dock.longitude) for dock in cls.docks]
+
+        edges = [(x+len(points),x+len(points), 0) for x in range(len(extra_points))]
+
+        y = 0
+        t = len(cls.adj)
+        while(y < t):
+            x = 0
+            while(x < t):
+                if cls.adj[y][x]:
+                    edges.append((x, y, int(cls.distances[y][x])))
+                x += 1
+            y += 1
+        to_graph(points + extra_points, edges)
+
+    @classmethod
     def find_natural_and_suitable(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Dock]]:
         """
         Returns the nearest dock and a list of suitable docks
@@ -67,7 +85,7 @@ class Main:
         return smallest, suitable
 
     @classmethod
-    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Destination]]:
+    def find_starting_dock(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Dock]]:
         """
         Returns the nearest dock and a list of suggestions based on some parameters defined inside Main
 
@@ -98,7 +116,7 @@ class Main:
         return
 
     @classmethod
-    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, list[Destination]]:
+    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, list[Dock]]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -131,10 +149,10 @@ class Main:
 
 def main(k: int = 5):
     docks = [
-        Dock(0  , 0  , 0  , k),
-        Dock(100, 0  , 100, k),
-        Dock(200, 0  , 200, k),
-        Dock(300, 100, 100, k),
+        Dock(0  , 0  , 0  , k, charges=True),
+        Dock(100, 100, 0  , k, charges=True),
+        Dock(200, 200, 0  , k, charges=True),
+        Dock(300, 100, 100, k, charges=True),
     ]
 
     adj = [
@@ -171,10 +189,4 @@ def main(k: int = 5):
         i += 1
 
     Main.init(docks, bikes, adj, dis)
-
-    for dock in docks:
-        print(dock)
-
-    print(dis)
-    print(Main.find_starting_dock(20, 30, 0))
 main()

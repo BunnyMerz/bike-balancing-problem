@@ -2,7 +2,7 @@ import inspect
 
 
 class Debug:
-    allowed = ['default']
+    allowed = ['default','debug','warning','error']
     last_context = None
 
     @classmethod
