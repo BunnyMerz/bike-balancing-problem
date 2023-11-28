@@ -34,7 +34,7 @@ class ChooseSubStation:
                 [100,10,100,15],
                 [100,10],
                 [100],
-                [50,20,10],8
+                [50,20,10],
             ]
             i = 0
             for dock in docks:

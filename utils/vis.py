@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 def to_graph(points: list[tuple[int, int]], points_labels: dict[tuple[int, int], Any], edges: list[tuple[int, int, int]], color_map: list[str]):
     G = nx.Graph()
 
+    G.add_nodes_from(points)
     for i in range(len(edges)):
         G.add_edge(points[edges[i][0]], points[edges[i][1]], weight=edges[i][2])
 
@@ -14,7 +15,7 @@ def to_graph(points: list[tuple[int, int]], points_labels: dict[tuple[int, int],
     pos = {point: point for point in points}
 
     # add axis
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     nx.draw(G, pos=pos, node_color=color_map, node_size=1500, ax=ax)  # draw nodes and edges
     nx.draw_networkx_labels(G, pos=pos, labels=points_labels)  # draw node labels/names
     # draw edge weights
