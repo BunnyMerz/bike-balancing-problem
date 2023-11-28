@@ -18,29 +18,31 @@ class Main:
     max_radius = None
     number_of_suggestions = None
 
-
-    #########
-    #### Suggest starting station
-    #########
+    # === Suggest starting station === #
     # Represents the max occupancy a dock must have to become a suggestion
     max_occupancy = None # in percent %
     # Represents the occupancy a dock must have less than the target occupancy
     occupancy_margin = None # in percent %
-    #########
-    #########
+    # ===                          === #
 
-
-    #########
-    #### Suggest Ending station
-    #########
+    # === Suggest Ending station === #
     # Represents the max battery a bike must have to become 'too low'
     bike_low_batery = None # in percent %
     bike_high_batery = None # in percent %
-    #########
-    #########
+    # ===                        === #
+
+    # ===  Suggest Sub station   === #
+    max_extra_distance : tuple[float, int] = None # [1.2, 90] would mean 120% of normal distance, clampped to 90
+    # ===                        === #
 
     @classmethod
-    def init_from_basic(cls, docks, bikes, adj, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90):
+    def init_from_basic(
+        cls, docks, bikes, adj,
+        max_radius = 145, number_of_suggestions = 1,
+        max_occupancy = 80, occupancy_margin = 10,
+        bike_low_batery = 20, bike_high_batery = 90,
+        max_extra_distance = [1.2, 90]
+    ):
         distances = []
         y = 0
         for adj_line in adj:
@@ -55,10 +57,16 @@ class Main:
                 x += 1
             distances.append(dis_line)
             y += 1
-        cls.init(docks, bikes, adj, distances, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90)
+        cls.init(docks, bikes, adj, distances, max_radius, number_of_suggestions, max_occupancy, occupancy_margin, bike_low_batery, bike_high_batery, max_extra_distance)
 
     @classmethod
-    def init(cls, docks, bikes, adj, distances, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90):
+    def init(
+        cls, docks, bikes, adj, distances,
+        max_radius = 145, number_of_suggestions = 1,
+        max_occupancy = 80, occupancy_margin = 10,
+        bike_low_batery = 20, bike_high_batery = 90,
+        max_extra_distance = [1.2, 90]
+    ):
         cls.docks =     docks
         cls.bikes =     bikes
         cls.adj =       adj
@@ -66,10 +74,14 @@ class Main:
 
         cls.max_radius = max_radius
         cls.number_of_suggestions = number_of_suggestions
+        
         cls.max_occupancy = max_occupancy
         cls.occupancy_margin = occupancy_margin
+
         cls.bike_low_batery = bike_low_batery
         cls.bike_high_batery = bike_high_batery
+
+        cls.max_extra_distance = max_extra_distance
 
     @classmethod
     def plot(cls, extra_points: list[tuple[int, int]] = []):
