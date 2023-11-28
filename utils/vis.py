@@ -1,8 +1,9 @@
+from typing import Any
 import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def to_graph(points: list[tuple[int, int]], edges: list[tuple[int, int, int]]):
+def to_graph(points: list[tuple[int, int]], points_labels: dict[tuple[int, int], Any], edges: list[tuple[int, int, int]], color_map: list[str]):
     G = nx.Graph()
 
     for i in range(len(edges)):
@@ -14,9 +15,8 @@ def to_graph(points: list[tuple[int, int]], edges: list[tuple[int, int, int]]):
 
     # add axis
     fig, ax = plt.subplots()
-    nx.draw(G, pos=pos, node_color='k', ax=ax)
-    nx.draw(G, pos=pos, node_size=1500, ax=ax)  # draw nodes and edges
-    nx.draw_networkx_labels(G, pos=pos)  # draw node labels/names
+    nx.draw(G, pos=pos, node_color=color_map, node_size=1500, ax=ax)  # draw nodes and edges
+    nx.draw_networkx_labels(G, pos=pos, labels=points_labels)  # draw node labels/names
     # draw edge weights
     labels = nx.get_edge_attributes(G, 'weight')
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels, ax=ax)

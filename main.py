@@ -1,11 +1,11 @@
 from utils.debug import Debug
-from examples.Case1 import ChooseEndingStation, ChooseStartingStation
+from examples.Subroutes import ChooseSubStation
 from src.program import Main
 print = Debug.print
 
 
 def main():
-    ChooseEndingStation.Example1.run()
+    ChooseSubStation.LowBattery_ChargeableEnd.run()
     Main.plot()
 
 if __name__ == "__main__":

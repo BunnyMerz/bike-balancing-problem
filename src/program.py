@@ -1,7 +1,7 @@
 from random import randint as rng
 from utils.debug import Debug
 from src.bikes import Dock, Bike
-from src.goals import Destination, Goal, PickBike, DeliverBike
+from src.goals import Destination, Goal, PickBike
 print = Debug.print
 
 
@@ -10,22 +10,22 @@ class Main:
     Capable of deciding what streategies are best and will seng fragments of them.
     The User interace must handle users performing or not these fragements and concatenate them as needed.
     """
-    docks:     list[Dock]        = []
-    bikes:     list[Bike]        = []
-    adj:       list[list[bool]]  = []
-    distances: list[list[float]] = []
+    docks:     list[Dock]        = None
+    bikes:     list[Bike]        = None
+    adj:       list[list[bool]]  = None
+    distances: list[list[float]] = None
 
-    max_radius = 145
-    number_of_suggestions = 1
+    max_radius = None
+    number_of_suggestions = None
 
 
     #########
     #### Suggest starting station
     #########
     # Represents the max occupancy a dock must have to become a suggestion
-    max_occupancy = 80 # in percent %
+    max_occupancy = None # in percent %
     # Represents the occupancy a dock must have less than the target occupancy
-    occupancy_margin = 10 # in percent %
+    occupancy_margin = None # in percent %
     #########
     #########
 
@@ -34,13 +34,13 @@ class Main:
     #### Suggest Ending station
     #########
     # Represents the max battery a bike must have to become 'too low'
-    bike_low_batery = 20 # in percent %
-    bike_high_batery = 90 # in percent %
+    bike_low_batery = None # in percent %
+    bike_high_batery = None # in percent %
     #########
     #########
 
     @classmethod
-    def init_from_basic(cls, docks, bikes, adj):
+    def init_from_basic(cls, docks, bikes, adj, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90):
         distances = []
         y = 0
         for adj_line in adj:
@@ -55,20 +55,34 @@ class Main:
                 x += 1
             distances.append(dis_line)
             y += 1
-        cls.init(docks, bikes, adj, distances)
+        cls.init(docks, bikes, adj, distances, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90)
 
     @classmethod
-    def init(cls, docks, bikes, adj, distances):
+    def init(cls, docks, bikes, adj, distances, max_radius = 145, number_of_suggestions = 1, max_occupancy = 80, occupancy_margin = 10, bike_low_batery = 20, bike_high_batery = 90):
         cls.docks =     docks
         cls.bikes =     bikes
         cls.adj =       adj
         cls.distances = distances
 
+        cls.max_radius = max_radius
+        cls.number_of_suggestions = number_of_suggestions
+        cls.max_occupancy = max_occupancy
+        cls.occupancy_margin = occupancy_margin
+        cls.bike_low_batery = bike_low_batery
+        cls.bike_high_batery = bike_high_batery
+
     @classmethod
     def plot(cls, extra_points: list[tuple[int, int]] = []):
         from utils.vis import to_graph
         points = [(dock.latitude, dock.longitude) for dock in cls.docks]
-
+        points_labels = {
+            (dock.latitude, dock.longitude):
+                ["[N]", "[C]"][dock.charges]
+                +"\n"+
+                f"{len(dock.bikes)}/{dock.capacity}"
+            for dock in cls.docks
+        }
+        color_map = [['red','orange'][dock.charges] for dock in cls.docks]
         edges = [(x+len(points),x+len(points), 0) for x in range(len(extra_points))]
 
         y = 0
@@ -80,7 +94,7 @@ class Main:
                     edges.append((x, y, int(cls.distances[y][x])))
                 x += 1
             y += 1
-        to_graph(points + extra_points, edges)
+        to_graph(points + extra_points, points_labels, edges, color_map)
 
     ############
     ###### Strategies
@@ -145,19 +159,19 @@ class Main:
         suitable_docks = []
         
         if chosen_dock.charges is False: # Doesn't charge
+            if natural.charges is True:
+                suitable_docks.append(natural) # Bike+Natural is part of the strategy this time
             # Find low battery
             suitable_bikes = [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
             # Find destinations that can charge that are better than the natural one
-            suitable_docks = [d for d in suitable if d.charges is True and d.occupancy < natural.occupancy()]
-            if natural.charges is True:
-                suitable_docks += natural # Bike+Natural is part of the strategy this time
+            suitable_docks += [d for d in suitable if d.charges is True and d.occupancy() < natural.occupancy()]
 
         if suitable_bikes != [] and suitable_docks != []:
             # Simple bike deliver!
             ## Must pick a certain type of bike
             pb = PickBike(min_battery_level=0, max_battery_level=cls.bike_low_batery, suitable=suitable_bikes)
-            dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks[:cls.number_of_suggestions])
             ## Must return to a certain destination
+            dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks[:cls.number_of_suggestions])
             return natural, Goal(initial_bike=pb, end_dest=dst)
         
         # No way of picking a specific bike and carrying it to the end, either no bike or no destination. 
@@ -172,7 +186,7 @@ class Main:
         # Here comes the logic for choosing what's better than the natural option
         # suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
         
-        return
+        return None, None
 
     @classmethod
     def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike = None) -> tuple[Dock, Goal]:

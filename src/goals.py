@@ -32,3 +32,11 @@ class Goal:
         self.sub_dest:     Destination = sub_dest
         self.bike_swap:    PickBike    = bike_swap
         self.end_dest:     Destination = end_dest
+
+    def __str__(self) -> str:
+        def to_str(attr: Destination | PickBike):
+            if attr is None:
+                return False
+            return len(attr.suitable)
+            
+        return f"<Goal: Init[{to_str(self.initial_dest)}], BikeInit[{to_str(self.initial_bike)}], SubDest[{to_str(self.sub_dest)}], BikeSwap[{to_str(self.bike_swap)}], EndDest[{to_str(self.end_dest)}]>"

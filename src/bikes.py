@@ -5,9 +5,8 @@ class Entity:
     _id = 0
     @classmethod
     def next_id(cls): cls._id += 1; return cls._id - 1
+    def __init__(self): self.id = self.next_id()
 
-    def __init__(self) -> None:
-        self.id = self.next_id()
 class Bike(Entity):
     def __init__(self, battery_level=100.0) -> None:
         super().__init__()
