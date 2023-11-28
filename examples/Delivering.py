@@ -1,10 +1,11 @@
 from utils.debug import Debug
 from src.bikes import Dock, Bike
 from src.program import Main
+from utils.vis import Point
 print = Debug.labeld_print(label="CaseStudy")
 
 
-class ChooseSubStation:
+class ChooseEndStation:
     class Example1:
         @classmethod
         def run(cls, k = 5):
@@ -35,6 +36,10 @@ class ChooseSubStation:
 
             Main.init_from_basic(docks, bikes, adj)
 
+            x = 60
+            y = 60
+            z = 0
             natural, suggestions = Main.find_ending_dock(60, 60, 0, Bike(10))
+            Point(x,y, "Gray", "Dest", width=0.6)
             assert natural == docks[1]
             assert suggestions.end_dest.suitable == [docks[0]]

@@ -48,7 +48,7 @@ class ChooseSubStation:
 
             results = [Main.docks[3], Main.docks[2]] # All suggestions, regardles of upper bound limit Main.number_of_suggestions
             Main.number_of_suggestions=len(Main.docks) # Show me all suggestions
-            natural, suggestions = Main.find_strategy(300, 100, 0, Main.docks[0])
+            natural, suggestions = Main.find_strategy(255, 145, 55, Main.docks[0])
             assert natural == Main.docks[3]
             assert suggestions.initial_bike.suitable == [Main.docks[0].bikes[1], Main.docks[0].bikes[3]]
             assert suggestions.end_dest.suitable == results

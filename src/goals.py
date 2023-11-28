@@ -27,11 +27,11 @@ class Destination:
     
 class Goal:
     def __init__(self, initial_dest: Destination = None, initial_bike: PickBike = None, sub_dest: Destination = None, bike_swap: PickBike = None, end_dest: Destination = None) -> None:
-        self.initial_dest: Destination = initial_dest
-        self.initial_bike: PickBike    = initial_bike
-        self.sub_dest:     Destination = sub_dest
-        self.bike_swap:    PickBike    = bike_swap
-        self.end_dest:     Destination = end_dest
+        self.initial_dest: Destination | None = initial_dest
+        self.initial_bike: PickBike    | None = initial_bike
+        self.sub_dest:     Destination | None = sub_dest
+        self.bike_swap:    PickBike    | None = bike_swap
+        self.end_dest:     Destination | None = end_dest
 
     def __str__(self) -> str:
         def to_str(attr: Destination | PickBike):

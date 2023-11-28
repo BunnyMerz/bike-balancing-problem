@@ -15,20 +15,22 @@ class Main:
     adj:       list[list[bool]]  = None
     distances: list[list[float]] = None
 
-    max_radius = None
-    number_of_suggestions = None
+    extra_points_to_plot: list[tuple[int, int]] = None
+
+    max_radius: float = None
+    number_of_suggestions: int = None
 
     # === Suggest starting station === #
     # Represents the max occupancy a dock must have to become a suggestion
-    max_occupancy = None # in percent %
+    max_occupancy: float = None # in percent %
     # Represents the occupancy a dock must have less than the target occupancy
-    occupancy_margin = None # in percent %
+    occupancy_margin: float = None # in percent %
     # ===                          === #
 
     # === Suggest Ending station === #
     # Represents the max battery a bike must have to become 'too low'
-    bike_low_batery = None # in percent %
-    bike_high_batery = None # in percent %
+    bike_low_batery: float = None # in percent %:
+    bike_high_batery: float = None # in percent %:
     # ===                        === #
 
     # ===  Suggest Sub station   === #
@@ -84,18 +86,18 @@ class Main:
         cls.max_extra_distance = max_extra_distance
 
     @classmethod
-    def plot(cls, extra_points: list[tuple[int, int]] = []):
-        from utils.vis import to_graph
-        points = [(dock.latitude, dock.longitude) for dock in cls.docks]
-        points_labels = {
-            (dock.latitude, dock.longitude):
-                ["[N]", "[C]"][dock.charges]
-                +"\n"+
-                f"{len(dock.bikes)}/{dock.capacity}"
-            for dock in cls.docks
-        }
-        color_map = [['red','orange'][dock.charges] for dock in cls.docks]
-        edges = [(x+len(points),x+len(points), 0) for x in range(len(extra_points))]
+    def plot(cls):
+        from utils.vis import to_graph, Point
+        points: list[Point] = []
+        for dock in cls.docks:
+            p = Point(
+                x=dock.latitude, y=dock.longitude,
+                color = ['red','orange'][dock.charges],
+                label = ["[N]", "[C]"][dock.charges]
+                        +"\n"+
+                        f"{len(dock.bikes)}/{dock.capacity}"
+            )
+            points.append(p)
 
         y = 0
         t = len(cls.adj)
@@ -103,10 +105,10 @@ class Main:
             x = 0
             while(x < t):
                 if cls.adj[y][x]:
-                    edges.append((x, y, int(cls.distances[y][x])))
+                    Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
                 x += 1
             y += 1
-        to_graph(points + extra_points, points_labels, edges, color_map)
+        to_graph()
 
     ############
     ###### Strategies
@@ -127,6 +129,7 @@ class Main:
         x = 0
         for dock in cls.docks:
             d = Dock.euclidian_distance_point(dock, lat, long, alt)
+            print(d)
             if d < cls.max_radius:
                 suitable.append(dock) # Finds all docks that may fit being a suggestion
             if d < smallest_value: # Finds the closest dock, even if not suitable
