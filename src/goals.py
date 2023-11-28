@@ -8,11 +8,7 @@ class PickBike:
         self.max_battery_level = max_battery_level
 
         self.suitable = suitable
-
-class DeliverBike(PickBike):
-    """Describes what a bike must have to be elegible, when delivering it"""
-    pass
-
+        
 class Destination:
     EITHER = -1
     NON_CHARGEABLE = 0

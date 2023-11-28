@@ -131,7 +131,7 @@ class Main:
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
         suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
 
-        return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable))
+        return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable[:cls.number_of_suggestions]))
     
     @classmethod
     def find_strategy(cls, lat: float, long: float, alt: float, chosen_dock: Dock) -> tuple[Dock, Goal]:
@@ -147,32 +147,35 @@ class Main:
         if chosen_dock.charges is False: # Doesn't charge
             # Find low battery
             suitable_bikes = [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
-            if suitable_bikes != []: # If there are any low batteries
-                # Find destinations that can charge that are better than the natural one
-                suitable_docks = [d for d in suitable if d.charges is True and d.occupancy < natural.occupancy()]
-                if natural.charges is True:
-                    suitable_docks += natural # Bike+Natural is part of the strategy this time
+            # Find destinations that can charge that are better than the natural one
+            suitable_docks = [d for d in suitable if d.charges is True and d.occupancy < natural.occupancy()]
+            if natural.charges is True:
+                suitable_docks += natural # Bike+Natural is part of the strategy this time
 
-        if suitable_docks != []:
+        if suitable_bikes != [] and suitable_docks != []:
             # Simple bike deliver!
             ## Must pick a certain type of bike
             pb = PickBike(min_battery_level=0, max_battery_level=cls.bike_low_batery, suitable=suitable_bikes)
-            dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks)
+            dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks[:cls.number_of_suggestions])
             ## Must return to a certain destination
             return natural, Goal(initial_bike=pb, end_dest=dst)
+        
+        # No way of picking a specific bike and carrying it to the end, either no bike or no destination. 
+        # If no destiantion, nothing to do here. 
+        # If no bike, search for sub-route
 
-        target_occupancy = min(
-            cls.max_occupancy + cls.occupancy_margin,
-            natural.occupancy() + cls.occupancy_margin
-        )
+        if suitable_docks == []:
+            return cls.find_ending_dock(lat, long, alt) # Try to find a good ending dock at least.
+        
+        ## Search for sub-routes here
 
         # Here comes the logic for choosing what's better than the natural option
-        suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
+        # suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
         
         return
 
     @classmethod
-    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike) -> tuple[Dock, Goal]:
+    def find_ending_dock(cls, lat: float, long: float, alt: float, current_bike: Bike = None) -> tuple[Dock, Goal]:
         """
         Returns the nearest suitable dock and a list of suggestions
 
@@ -200,7 +203,7 @@ class Main:
 
         # If bike is too low, filter all docks to chargeables, unless there are none.
         chargeable = Destination.EITHER
-        if current_bike.battery_level < cls.bike_low_batery:
+        if current_bike is not None and current_bike.battery_level < cls.bike_low_batery:
             chargeable_suitable = [dock for dock in suitable if dock.charges]
             if chargeable_suitable != [] or natural.charges: # If no options are found, don't attribute it to suitable, except if the natural dock is chargeable
                 suitable = chargeable_suitable

@@ -39,12 +39,6 @@ class ChooseStartingStation:
             assert natural == docks[1]
             assert suggestions.initial_dest.suitable == [docks[0]]
 
-from utils.debug import Debug
-from src.bikes import Dock, Bike
-from src.program import Main
-print = Debug.labeld_print(label="CaseStudy")
-
-
 class ChooseEndingStation:
     class Example1:
         @classmethod
