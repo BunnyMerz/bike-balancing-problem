@@ -41,7 +41,10 @@ class SimUser:
     ToEnd  = 4
     Done = 5
     Idle = 6
-    Erro = 7
+    CantStart = 7
+    CantPick = 8
+    CantStartRun = 9
+    CantDeliver = 10
 
     state_names = [
         "At Start",
@@ -51,11 +54,14 @@ class SimUser:
         "ToTheEnd",
         "--Done--",
         "--Idle--",
-        "--Erro--",
+        "--CtSt--",
+        "--CtPi--",
+        "--CtSR--",
+        "--CtDe--",
     ]
 
-    chance_to_follow_suggestion = 0
-    def __init__(self, current_location: GeoPosition, destination: GeoPosition, user_obj: User | None = None) -> None:
+    chance_to_follow_suggestion = 1
+    def __init__(self, current_location: GeoPosition, destination: GeoPosition, user_obj: User | None = None, offset_timer: float = 0) -> None:
         self.user_obj: User | None = user_obj
 
         self.dest: GeoPosition = destination
@@ -64,6 +70,7 @@ class SimUser:
         self.current_dock: Dock = None
 
         self.internal_clock = Clock()
+        self.internal_clock.set(offset_timer)
         self.state = SimUser.Start
 
         self.active_goal: Goal = None
@@ -92,7 +99,7 @@ class SimUser:
         return self.system_entry_time is not None and self.system_exit_time is not None and self.system_entry_time - self.system_exit_time == 0
 
     def done(self):
-        return self.state in [self.Erro, self.Done]
+        return self.state >= 6
 
     def follow_suggestion(self, natural: Dock, suggestion: Goal):
         return random() < self.chance_to_follow_suggestion
@@ -133,7 +140,7 @@ class SimUser:
             self.current_location = self.current_dock.coords()
         else:                 # No Option. User gets upset and gives up on using system
             print("No option")
-            self.state = SimUser.Erro # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            self.state = SimUser.CantStart # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
 
     def StateToInitialDock(self):
         print("ToInitialDock")
@@ -174,9 +181,9 @@ class SimUser:
                 self.current_dock.retrieve(self.current_bike)
                 self.current_bike = None
                 self.current_dock = None
-                self.state = SimUser.Erro # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+                self.state = SimUser.CantStartRun # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
         else: # User reached an Empty Dock. User gets upset and gives up on using system
-            self.state = SimUser.Erro # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            self.state = SimUser.CantPick # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
 
     def StateToSubWithFull(self):
         return
@@ -193,7 +200,7 @@ class SimUser:
             self.current_dock = None
         else:
             # TODO: Fix this later, he should look for another dock to leave his Bike. Find_ending_dock should do the trick
-            self.state = SimUser.Erro
+            self.state = SimUser.CantDeliver
             return
         self.state = SimUser.Done
 

@@ -1,15 +1,16 @@
 from examples.Picking import ChooseStartingStation
 from examples.Subroutes import ChooseSubStation
 from examples.Delivering import ChooseEndStation
+from examples.Simulation import Simulations
 
 from src.sim import SimUser
 from src.program import Main
 
-from random import randint as rng
+from random import randint as rng, seed
 
 from utils.debug import Debug
 print = Debug.print
-
+seed(1348923042372304723489)
 
 def order_by_time(users: list[SimUser]):
     return sorted(users, key=lambda x: x.internal_clock.t)
@@ -24,14 +25,15 @@ def insert_by_time(user: SimUser, users: list[SimUser]):
     return users
 
 def main():
-    docks, bikes, adj = ChooseStartingStation.OneSuggestion.build()
+    docks, bikes, adj = Simulations.BigGrid.build(bike_amount=2)
     
 
     users: list[SimUser] = []
-    for x in range(7):
+    for x in range(100):
         sim = SimUser(
-            (rng(0,40), rng(0,40), 0),
-            (rng(200,300), rng(150,200), 0)
+            (rng(0,1000), rng(0,1000), 0),
+            (rng(0,1000), rng(0,1000), 0),
+            offset_timer=((x%10)+1) * 200
         )
         users.append(sim)
 
@@ -51,6 +53,10 @@ def main():
     print()
     for user in users:
         print(user)
+    print(len([x for x in users if x.state == x.CantStart]))
+    print(len([x for x in users if x.state == x.CantPick]))
+    print(len([x for x in users if x.state == x.CantStartRun]))
+    print(len([x for x in users if x.state == x.CantDeliver]))
 
     Main.plot()
 

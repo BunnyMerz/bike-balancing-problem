@@ -90,12 +90,15 @@ class Main:
         from utils.vis import to_graph, Point
         points: list[Point] = []
         for dock in cls.docks:
+            label = (
+                    ["[N]", "[C]"][dock.charges]
+                    +"\n"+
+                    f"{len(dock.bikes)}/{dock.capacity}"
+                )
             p = Point(
                 x=dock.latitude, y=dock.longitude,
                 color = ['red','orange'][dock.charges],
-                label = ["[N]", "[C]"][dock.charges]
-                        +"\n"+
-                        f"{len(dock.bikes)}/{dock.capacity}"
+                label = label
             )
             points.append(p)
 
