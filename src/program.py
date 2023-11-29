@@ -2,7 +2,7 @@ from random import randint as rng
 from utils.debug import Debug
 from src.bikes import Dock, Bike
 from src.goals import Destination, Goal, PickBike
-print = Debug.print
+print_d = Debug.labeld_print("depth")
 
 
 class Main:
@@ -34,7 +34,7 @@ class Main:
     # ===                        === #
 
     # ===  Suggest Sub station   === #
-    max_extra_distance : tuple[float, int] = None # [1.2, 90] would mean 120% of normal distance, clampped to 90
+    max_extra_distance : tuple[float, int] = None # [0.2, 90] would mean 120% of normal distance, clampped to 90
     # ===                        === #
 
     @classmethod
@@ -67,7 +67,7 @@ class Main:
         max_radius = 145, number_of_suggestions = 1,
         max_occupancy = 80, occupancy_margin = 10,
         bike_low_batery = 20, bike_high_batery = 90,
-        max_extra_distance = [1.2, 90]
+        max_extra_distance = [2, 900]
     ):
         cls.docks =     docks
         cls.bikes =     bikes
@@ -242,3 +242,66 @@ class Main:
                 chargeable = Destination.CHARGEABLE
 
         return natural, Goal(end_dest=Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=suitable))
+
+    ############
+    ###### Utils
+    ############
+    @classmethod
+    def find_dock_index(cls, target_dock: Dock):
+        x = 0
+        for dock in cls.docks:
+            if dock.id == target_dock.id:
+                return x
+            x += 1
+
+    @classmethod
+    def depth_search(cls, start: Dock, middle: Dock, end: Dock) -> tuple[list[Dock], float]:
+        start_i = cls.find_dock_index(start)
+        middle_i = cls.find_dock_index(middle)
+        end_i = cls.find_dock_index(end)
+
+        mult, clamp = Main.max_extra_distance
+        max_distance = Dock.euclidian_distance(start, end)
+        max_distance += min(mult * max_distance, clamp)
+
+        start_middle_path, dist = cls._depth_search(start_i, middle_i, max_distance, 0, set([start_i]))
+        if start_middle_path == [] and dist == -1: return [], -1
+        middle_end_path, dist = cls._depth_search(middle_i, end_i, max_distance, dist, set(start_middle_path))
+        if middle_end_path == [] and dist == -1: return [], -1
+        return [cls.docks[x] for x in list(start_middle_path) + list(middle_end_path)], dist
+    @classmethod
+    def _depth_search(cls, current_i: int, end_i: int, max_distance: int, accumulated_dist: int, already_visited: set[int]) -> tuple[list[int], float] | tuple[list, -1]:
+        """
+        Search for the shortest (first, for now) path between current and end, that don't exceed `max_distance`.
+        Returns `[((DockIndex, ...), TotalDistance),...]` or None when there isn't a path that meets the requirements
+        """
+        print_d("=======", current_i, end_i)
+        if current_i == end_i:
+            print_d("=== end with", already_visited, accumulated_dist)
+            return already_visited, accumulated_dist
+
+        neighs = []
+        neighs_dists = []
+        for x in range(len(cls.docks)): # Escolha apenas nós vizinhos que não ultrapassem o limite de distancia
+            print_d("=======--", x, bool(cls.adj[current_i][x]), already_visited, cls.adj[current_i][x] == True, x not in already_visited)
+            if cls.adj[current_i][x] == True and x not in already_visited:
+                to_neigh_dist = Dock.euclidian_distance(cls.docks[x], cls.docks[current_i])
+                print_d("=======---", x, accumulated_dist+to_neigh_dist, max_distance)
+                if accumulated_dist + to_neigh_dist < max_distance:
+                    print_d("=======--- +", x)
+                    neighs.append(x)
+                    neighs_dists.append(to_neigh_dist)
+
+        print_d(neighs)
+        for x in range(len(neighs)):
+            neigh = neighs[x]
+            neigh_dist = neighs_dists[x]
+
+            already_visited.add(neigh)
+            print_d(f"== ({neigh} -> {end_i} with {accumulated_dist + neigh_dist} and {already_visited})")
+            path, dist = cls._depth_search(neigh, end_i, max_distance, accumulated_dist + neigh_dist, already_visited)
+            if path != []:
+                print_d("== recursive return")
+                return path, dist
+            already_visited.remove(neigh)
+        return [], -1

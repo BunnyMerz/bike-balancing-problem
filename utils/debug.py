@@ -2,7 +2,8 @@ import inspect
 
 
 class Debug:
-    allowed = ['default','debug','warning','error'] + ["casestudy", "vis"]
+    allowed = ['default','debug','warning','error']
+    allowed += ["casestudy", "vis"] #, "depth"]
     last_context = None
     last_label = None
 

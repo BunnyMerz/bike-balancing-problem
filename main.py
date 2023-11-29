@@ -10,6 +10,10 @@ print = Debug.print
 
 def main():
     ChooseStartingStation.OneSuggestion.run()
+    path, dist = Main.depth_search(
+        Main.docks[0], Main.docks[1], Main.docks[3]
+    )
+    print(path, dist)
     Main.plot()
 
 if __name__ == "__main__":
