@@ -115,7 +115,7 @@ class Main:
     ############
 
     @classmethod
-    def find_natural_and_suitable(cls, lat: float, long: float, alt: float) -> tuple[Dock, list[Dock]]:
+    def find_natural_and_suitable(cls, lat: float, long: float, alt: float, cant_be_full: bool) -> tuple[Dock, list[Dock]]:
         """
         Returns the nearest dock and a list of suitable docks
 
@@ -128,6 +128,8 @@ class Main:
 
         x = 0
         for dock in cls.docks:
+            if cant_be_full and dock.full(): continue
+            if not cant_be_full and dock.empty(): continue
             d = Dock.euclidian_distance_point(dock, lat, long, alt)
             if d < cls.max_radius:
                 suitable.append(dock) # Finds all docks that may fit being a suggestion
@@ -147,7 +149,7 @@ class Main:
         lat, long, alt: float
             User's current coordinates
         """
-        natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
+        natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=False)
         
         target_occupancy = min(
             cls.max_occupancy + cls.occupancy_margin,
@@ -164,9 +166,9 @@ class Main:
     @classmethod
     def find_strategy(cls, lat: float, long: float, alt: float, chosen_dock: Dock) -> tuple[Dock, Goal]:
         """
-        Returns list of goals as suggestions to user
+        Returns a natural choice and a Goal with suitable docks as possible goal achievment
         """
-        natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
+        natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=True)
 
         available_bikes = chosen_dock.bikes
         suitable_bikes = []
@@ -217,7 +219,7 @@ class Main:
         current_bike: Bike
             User's current bike
         """
-        natural, suitable = cls.find_natural_and_suitable(lat, long, alt)
+        natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=True)
         if suitable == []:
             return natural, [] # No sugestion
         
