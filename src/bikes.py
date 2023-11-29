@@ -48,8 +48,9 @@ class Dock(Entity):
 
     def occupancy(self):
         return len(self.bikes)/self.capacity * 100
-    def full(self):  return len(self.bikes) >= self.capacity
-    def empty(self): return len(self.bikes) == 0
+    def full  (self): return len(self.bikes) >= self.capacity
+    def empty (self): return len(self.bikes) == 0
+    def coords(self): return (self.latitude, self.longitude, self.altitude)
 
     def retrieve(self, bike: Bike):
         assert len(self.bikes) < self.capacity
