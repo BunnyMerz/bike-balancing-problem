@@ -3,7 +3,7 @@ import inspect
 
 class Debug:
     allowed = ['default','debug','warning','error']
-    allowed += ["casestudy", "vis"] #, "depth"]
+    allowed += ["casestudy", "vis", "simulator"] #, "depth"]
     last_context = None
     last_label = None
 
@@ -29,7 +29,7 @@ class Debug:
                 cls.last_context = last_call.function
                 if cls.last_context != last_call.function:
                     print()
-                print(f'({label}, {last_call.function}() at {file_name}, line {last_call.lineno}):', *args, **kw)
+                print(f'({label}, {last_call.function}() at "{file_name}", line {last_call.lineno}):', *args, **kw)
 
     @classmethod
     def labeld_print(cls, label: str):
