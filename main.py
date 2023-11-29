@@ -15,11 +15,11 @@ def main():
     
     ts = SimUser(
         (90, 90, 0),
-        (300, 100, 100)
+        (200, 100, 100)
     )
 
     print(f"=====",ts)
-    while(ts.state != ts.Done):
+    while(ts.state != ts.Idle):
         ts.act()
         print(f"=====",ts)
 

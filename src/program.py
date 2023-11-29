@@ -220,14 +220,16 @@ class Main:
             User's current bike
         """
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=True)
-        if suitable == []:
-            return natural, [] # No sugestion
-        
 
+        chargeable = Destination.EITHER
         target_occupancy = min(
             cls.max_occupancy - cls.occupancy_margin,
             natural.occupancy() - cls.occupancy_margin
         )
+
+        if suitable == []:
+            return natural, Goal(end_dest=Destination(chargeable, min_capacity=0, max_capacity=target_occupancy, suitable=[])) # No sugestion
+
         
         # Here comes the logic for choosing what's better than the natural option
         #  Occupancy has higher priority. It will filter based on chargeability only if possible.
@@ -236,7 +238,6 @@ class Main:
         suitable = [dock for dock in suitable if dock.occupancy() < target_occupancy][:cls.number_of_suggestions]
 
         # If bike is too low, filter all docks to chargeables, unless there are none.
-        chargeable = Destination.EITHER
         if current_bike is not None and current_bike.battery_level < cls.bike_low_batery:
             chargeable_suitable = [dock for dock in suitable if dock.charges]
             if chargeable_suitable != [] or natural.charges: # If no options are found, don't attribute it to suitable, except if the natural dock is chargeable

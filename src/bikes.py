@@ -63,6 +63,14 @@ class Dock(Entity):
         bike = self.bikes.pop(bike_i)
         bike.dock = None
         return bike
+    def pick_any(self):
+        bike_i = 0
+        x = 1
+        while(x < len(self.bikes)):
+            if self.bikes[x].battery_level > self.bikes[bike_i].battery_level:
+                bike = x
+            x+=1
+        return self.pick(bike_i)
 
 class User(Entity):
     def __init__(self) -> None:
