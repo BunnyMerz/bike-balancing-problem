@@ -56,7 +56,7 @@ class ChooseStartingStation:
                 Dock(0  , 0  , 0  , 5, charges=True),
                 Dock(100, 100, 0  , 5, charges=True),
                 Dock(200, 200, 0  , 5, charges=False),
-                Dock(300, 100, 100, 5, charges=True),
+                Dock(300, 100, 0, 5, charges=True),
             ]
 
             adj = [
@@ -70,7 +70,7 @@ class ChooseStartingStation:
             bb = [
                 [100,10,100,15],
                 [100],
-                [100,10,10,10,10],
+                [100,10],
                 [50,20,10,10],
             ]
             i = 0

@@ -20,6 +20,9 @@ class Bike(Entity):
         return f"<Bike[{self.id}]: {int(self.battery_level)}%, {self.mileage}km>"
 
 class Dock(Entity):
+    NeitherBias = -1 # For natural stations
+    EmptyBias = 0 # When delivering
+    FullBias = 1 # When picking
     def __init__(self, lat: float, lon: float, alt: float, k: int, charges: bool = True) -> None:
         super().__init__()
         self.latitude: float = lat
@@ -29,6 +32,10 @@ class Dock(Entity):
         self.capacity: int = k
         self.bikes: list[Bike] = []
         self.charges: bool = charges
+
+        self.interested_delivery = 0
+        self.interested_retrieving = 0
+
 
     def __repr__(self) -> str:
         return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {self.bikes}>"
@@ -47,7 +54,31 @@ class Dock(Entity):
         z = dock_1.longitude - longitude
         y = dock_1.altitude - altitude
         return (x*x + y*y + z*z)**(1/2)
+    
 
+    def show_deliver_interest(self):
+        self.interested_delivery += 1
+    def lose_deliver_interest(self):
+        self.interested_delivery -= 1
+    def done_with_deliver_interest(self):
+        self.interested_delivery -= 1
+
+    def show_retrieving_interest(self):
+        self.interested_retrieving += 1
+    def lose_retrieving_interest(self):
+        self.interested_retrieving -= 1
+    def done_with_retrieving_interest(self):
+        self.interested_retrieving -= 1
+
+    def bike_count(self, bias: int = NeitherBias):
+        bike_amount = len(self.bikes)
+        if bias == self.EmptyBias:
+            if bike_amount == self.capacity:
+                return bike_amount
+            max(len(self.bikes) + self.inte)
+        elif bias == self.FullBias:
+            pass
+        return bike_amount
     def occupancy(self):
         return len(self.bikes)/self.capacity * 100
     def full  (self): return len(self.bikes) >= self.capacity
