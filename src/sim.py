@@ -1,7 +1,14 @@
-from bikes import Dock, Bike, User
+from random import random
+from typing import Callable
+
+from src.bikes import Dock, Bike, User
+from src.goals import Goal, PickBike
+from src.program import Main
 
 
 class Clock:
+    dist_to_time_walk = 4 # 4 meter = 1 minute
+    dist_to_time_bike = 1 # 1 meter = 1 minute
     def __init__(self) -> None:
         self.t = 0.0
 
@@ -13,88 +20,87 @@ class Clock:
         if _o > self.t:
             self.t = _o
 
-class Trip:
-    def __init__(self, dests, start_time):
-        self.dest = dests
-        self.start_time = start_time
+    def add_time_taken_from_to_dock(self, dock1: Dock, dock2: Dock, has_bike: bool):
+        return Dock.euclidian_distance(dock1, dock2) * [Clock.dist_to_time_walk, Clock.dist_to_time_bike][has_bike]
+    
+    def add_time_taken_from_to_point(self, dock1: Dock, lat: float, long: float, alt: float, has_bike: bool):
+        return Dock.euclidian_distance_point(dock1, lat, long, alt) * [Clock.dist_to_time_walk, Clock.dist_to_time_bike][has_bike]
 
-    def cost(self) -> tuple[float, float]:
-        return # Get the cost btw each dest and retur. Distance and Time
-    @property
-    def end_location(self):
-        return self.dest[-1]
 
-class Schedule:
-    def __init__(self, current_location, destinations: list[Trip]):
-        self.current_location = current_location
-        self.destinations = destinations
-        self.i = 0
+GeoPosition = tuple[float, float, float]
+class SimUser:
+    Start  = 0
+    ToInitialDock = 1
+    ToSubWithFull = 2
+    ToSubWithEmpty = 3
+    ToEnd  = 4
+    Done = 5
 
-    def get_bike(self) -> Bike:
-        start = self.current_location
-        end = self.destination.end_location
-        dock = Dock() ## start.dock
-        if dock != None:
-            # algorithm call, returns Bike
-            # bike = decide(dock, start, end, user)
-            pass
-        return Bike()
+    chance_to_follow_suggestion = 0.5
+    def __init__(self) -> None:
+        self.dest: Dock = None
+        self.user_obj: User = None
 
-    @property
-    def destination(self):
-        if self.ended:
-            return None
-        return self.destinations[self.i]
-    def next_dest(self):
-        self.current_location = self.destination
-        self.i += 1
-    @property
-    def ended(self):
-        return self.i >= len(self.destinations)
+        self.current_location: GeoPosition = None
+        self.current_bike: Bike = None
+        self.current_dock: Dock = None
 
-class Entity:
-    def __init__(self, user: User, schedule: Schedule, starting_location):
-        self.bike = None
-        self.user = user
-        self.schedule = schedule
-        self.c = Clock()
-        self.buffered_actions = [["NextEvent"]]
+        self.swap_bike_desc: PickBike = None
 
-    def __call__(self):
-        if self.buffered_actions != []:
-            return self.act()
-        if self.schedule.ended:
-            return
-        
-        # If it isn't the time for the next destination, raise an exception or warning, for debugging
-        if self.schedule.destination.start_time != self.c.t:
-            self.buffered_actions += [
-                ["NextEvent"]
-            ]
-            return
-        
-        possible_bike = self.schedule.get_bike()
-        if possible_bike != None:
-            distance_cost, time_cost = self.schedule.destination.cost()
-            possible_bike.travel(distance_cost, time_cost)
-            self.buffered_actions += [
-                ["ReleaseBike", self.c.t + time_cost]
-            ]
-        self.schedule.next_dest()
-        self.buffered_actions += [
-            ["NextEvent"]
-        ]
+        self.internal_clock = Clock()
+        self.state = 0
 
-        
+        self.active_goal = None
+        self.achieved_goals = []
+
+    def follow_suggestion(self, suggestion: Goal):
+        return random() < self.chance_to_follow_suggestion
 
     def act(self):
-        action = self.buffered_actions.pop(0)
+        [
+            self.StateStart,
+            self.StateToInitialDock,
+            self.StateToSubWithFull,
+            self.StateToSubWithEmpty,
+            self.StateToEnd
+        ]
+        [self.state]()
 
-        if action[0] == "NextEvent":
-            if self.schedule.destination == None: return
-            self.buffered_actions += [
-                ["WaitUntil", self.schedule.destination.start_time]
-            ]
-        if action[0] == "WaitUntil":
-            self.c.wait_until(action[1])
-        # if NextDest, buffer WaitUntil, release bike if any, schedule.next_dest()
+    def StateStart(self):
+        natural, suggestion = Main.find_starting_dock(*self.current_location)
+        if (
+            self.follow_suggestion(natural, suggestion)
+            and suggestion.initial_dest.suitable != []
+        ):                    # Will follow suggestion and go to random suggestion
+            self.state = SimUser.ToInitialDock
+
+            self.current_dock = suggestion.initial_dest.suitable[0]
+            self.active_goal = suggestion
+
+            self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location)
+            self.current_location = self.current_dock.coords()
+        elif natural != None: # User will go straight to starting Dock
+            self.state = SimUser.ToInitialDock
+
+            self.current_dock = natural
+
+            self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location)
+            self.current_location = self.current_dock.coords()
+        else:                 # No Option. User gets upset and gives up on using system
+            self.state = SimUser.Done
+
+    def StateToInitialDock(self):
+        if self.active_goal is not None: # User took a suggestion, check if he succeded
+            # Only previous state was Start, thus only check self.current_dock
+            if self.active_goal.validate(self.current_dock, self.active_goal.initial_dest):
+                self.achieved_goals.append(self.active_goal)
+                self.active_goal = None
+
+        natural, suggestion = Main.find_strategy(*self.current_location, self.current_dock)
+
+    def StateToSubWithFull(self):
+        return
+    def StateToSubWithEmpty(self):
+        return
+    def StateToEnd(self):
+        return

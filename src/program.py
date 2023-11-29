@@ -180,7 +180,7 @@ class Main:
             # Find low battery
             suitable_bikes += [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
             # Find destinations that can charge that are better than the natural one
-            suitable_docks += [d for d in suitable if d.charges is True and d.occupancy() < natural.occupancy()]
+            suitable_docks += [d for d in suitable if d.charges is True and d.occupancy() < natural.occupancy()] # TODO: Sort by occupancy
 
         if suitable_bikes != [] and suitable_docks != []:
             # Simple bike deliver!
