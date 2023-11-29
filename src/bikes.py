@@ -32,6 +32,8 @@ class Dock(Entity):
 
     def __repr__(self) -> str:
         return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {self.bikes}>"
+    def simple(self) -> str:
+        return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {len(self.bikes)} Bikes>"
 
     @classmethod
     def distance(cls, dock_1: "Dock", dock_2: "Dock"):

@@ -2,6 +2,8 @@ from examples.Picking import ChooseStartingStation
 from examples.Subroutes import ChooseSubStation
 from examples.Delivering import ChooseEndStation
 
+from src.sim import SimUser
+
 from utils.debug import Debug
 
 from src.program import Main
@@ -9,11 +11,18 @@ print = Debug.print
 
 
 def main():
-    ChooseStartingStation.OneSuggestion.run()
-    path, dist = Main.depth_search(
-        Main.docks[0], Main.docks[1], Main.docks[3]
+    docks, bikes, adj = ChooseStartingStation.OneSuggestion.build()
+    
+    ts = SimUser(
+        (90, 90, 0),
+        (300, 100, 100)
     )
-    print(path, dist)
+
+    print(f"=====",ts)
+    while(ts.state != ts.Done):
+        ts.act()
+        print(f"=====",ts)
+
     Main.plot()
 
 if __name__ == "__main__":
