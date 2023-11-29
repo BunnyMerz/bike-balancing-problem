@@ -275,6 +275,8 @@ class Main:
         Search for the shortest (first, for now) path between current and end, that don't exceed `max_distance`.
         Returns `[((DockIndex, ...), TotalDistance),...]` or None when there isn't a path that meets the requirements
         """
+        # TODO: Implement A* search instead.
+
         print_d("=======", current_i, end_i)
         if current_i == end_i:
             print_d("=== end with", already_visited, accumulated_dist)
