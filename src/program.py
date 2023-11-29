@@ -129,7 +129,6 @@ class Main:
         x = 0
         for dock in cls.docks:
             d = Dock.euclidian_distance_point(dock, lat, long, alt)
-            print(d)
             if d < cls.max_radius:
                 suitable.append(dock) # Finds all docks that may fit being a suggestion
             if d < smallest_value: # Finds the closest dock, even if not suitable

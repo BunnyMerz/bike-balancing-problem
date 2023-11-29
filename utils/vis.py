@@ -14,8 +14,8 @@ class Point:
     def next_id(self): Point._id += 1; return Point._id - 1
     def __init__(self, x: int, y: int, color: str, label: str, width: float = 1.0):
         self.id = self.next_id()
-        self.x = x
-        self.y = y
+        self.x = x + 0.00001 * self.id
+        self.y = y + 0.00001 * self.id
         self.color = color
         self.label = label
         self.width = width
@@ -53,16 +53,13 @@ class Point:
         cls.points = []
     @classmethod
     def keys(cls):
-        return [p.id for p in cls.points]
+        return [p.coords() for p in cls.points]
 
 # def to_graph(points: list[tuple[int, int]], points_labels: dict[tuple[int, int], Any], edges: list[tuple[int, int, int]], color_map: list[str]):
 def to_graph():
     G = nx.Graph()
 
     points = Point.keys()
-    print(points)
-    print(Point.points)
-    print()
     edges = Point.edges
     color_map = Point.color_map()
     points_labels = Point.labels()
@@ -74,13 +71,9 @@ def to_graph():
     # you want your own layout
     # pos = nx.spring_layout(G)
     pos = {point: point for point in points}
-    print(pos)
 
     # add axis
     _, ax = plt.subplots()
-    print(pos)
-    print(color_map)
-    print([1500*x.width for x in Point.points])
     nx.draw(G, pos=pos, node_color=color_map, node_size=[1500*x.width for x in Point.points], ax=ax)  # draw nodes and edges
     nx.draw_networkx_labels(G, pos=pos, labels=points_labels)  # draw node labels/names
     # draw edge weights

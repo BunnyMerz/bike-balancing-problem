@@ -93,6 +93,6 @@ class ChooseStartingStation:
             assert suggestions.bike_swap             == None
             
             Point(x,y, "Gray", "User", width=0.5)
-            Point(natural.latitude,natural.longitude, "Gray", "Nat", width=0.5)
+            Point(natural.latitude,natural.longitude, "Gray", "Nat\n\n\n", width=0.5)
             for sug in suggestions.initial_dest.suitable:
-                Point(sug.latitude,sug.longitude, "Gray", "Sg", width=0.5)
+                Point(sug.latitude,sug.longitude, "Gray", "Sg\n\n\n", width=0.5)
