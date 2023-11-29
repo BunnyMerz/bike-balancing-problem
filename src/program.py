@@ -176,7 +176,7 @@ class Main:
             if natural.charges is True:
                 suitable_docks.append(natural) # Bike+Natural is part of the strategy this time
             # Find low battery
-            suitable_bikes = [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
+            suitable_bikes += [b for b in available_bikes if b.battery_level < cls.bike_low_batery] # TODO: Check if every bike is suitable? If so, don't suggest anything but the destination.
             # Find destinations that can charge that are better than the natural one
             suitable_docks += [d for d in suitable if d.charges is True and d.occupancy() < natural.occupancy()]
 
@@ -188,16 +188,20 @@ class Main:
             dst = Destination(Destination.CHARGEABLE, min_capacity=0, max_capacity=natural.occupancy(), suitable=suitable_docks[:cls.number_of_suggestions])
             return natural, Goal(initial_bike=pb, end_dest=dst)
         
+        # If code reached here it means
         # No way of picking a specific bike and carrying it to the end, either no bike or no destination. 
-        # If no destiantion, nothing to do here. 
-        # If no bike, search for sub-route
+        # If no destiantion and no bike, nothing to do here. Run find_ending_dock
+        # If only no destiantion, search for cheargeble sub-route
+        # If only no bike, search for sub-route with low batter bike
 
-        if suitable_docks == []:
-            return cls.find_ending_dock(lat, long, alt) # Try to find a good ending dock at least.
+        if suitable_docks == [] and suitable_bikes == []:
+            return cls.find_ending_dock(lat, long, alt) # Try to find a good ending dock at least. (Dock suggestion only, no bike)
         
         ## Search for sub-routes here
-
-        # Here comes the logic for choosing what's better than the natural option
+        if suitable_bikes != []: # Low battery at start, serach for chargeable sub-station
+            pass
+        else:  # No Low battery at start, serach for chargeable sub-station
+            pass
         # suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
         
         return None, None
