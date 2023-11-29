@@ -51,12 +51,12 @@ class ChooseStartingStation:
 
     class OneSuggestion:
         @classmethod
-        def run(cls, k = 5):
+        def build(cls) -> tuple[list[Dock], list[Bike], list[list[int]]]:
             docks = [
-                Dock(0  , 0  , 0  , k, charges=True),
-                Dock(100, 100, 0  , k, charges=True),
-                Dock(200, 200, 0  , k, charges=False),
-                Dock(300, 100, 100, k, charges=True),
+                Dock(0  , 0  , 0  , 5, charges=True),
+                Dock(100, 100, 0  , 5, charges=True),
+                Dock(200, 200, 0  , 5, charges=False),
+                Dock(300, 100, 100, 5, charges=True),
             ]
 
             adj = [
@@ -82,6 +82,10 @@ class ChooseStartingStation:
                 i += 1
 
             Main.init_from_basic(docks, bikes, adj)
+            return docks, bikes, adj
+        @classmethod
+        def run(cls):
+            docks, bikes, adj = cls.build()
 
             x = 60
             y = 60
