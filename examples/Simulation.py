@@ -22,12 +22,12 @@ class Simulations:
                 sim = SimUser(
                     (rng(0,500), rng(0,500), 0),
                     (rng(0,500), rng(0,500), 0),
-                    offset_timer=(x//250) * 300 + x*10
+                    offset_timer= x*10000
                 )
                 users.append(sim)
             return users
         @classmethod
-        def build(cls, k = 8):
+        def build(cls, k = 5):
             docks: list[Dock] = []
             adj: list[list[int]] = []
             x_w = 6
@@ -51,7 +51,7 @@ class Simulations:
             bikes = []
             i = 0
             for dock in docks:
-                for x in range(5):
+                for x in range(3):
                     bike = Bike(battery_level=50)
                     bikes.append(bike)
                     dock.retrieve(bike)
