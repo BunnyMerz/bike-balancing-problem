@@ -166,13 +166,13 @@ class Main:
         
         target_occupancy = min(
             cls.max_occupancy + cls.occupancy_margin,
-            natural.occupancy() + cls.occupancy_margin
+            natural.occupancy(Dock.PickBias) + cls.occupancy_margin
         )
         
         # Here comes the logic for choosing what's better than the natural option
         #  For now, it only cares about occupancy, not what bikes are in it.
         #  Caring about bikes in it would require a logic for determing how much occupancy weights versus bicicle battery
-        suitable = [dock for dock in suitable if dock.occupancy() > target_occupancy][:cls.number_of_suggestions]
+        suitable = [dock for dock in suitable if dock.occupancy(Dock.PickBias) > target_occupancy][:cls.number_of_suggestions]
 
         return natural, Goal(initial_dest=Destination(Destination.EITHER, min_capacity=target_occupancy, max_capacity=100, suitable=suitable[:cls.number_of_suggestions]))
     
@@ -237,7 +237,7 @@ class Main:
         chargeable = Destination.EITHER
         target_occupancy = min(
             cls.max_occupancy - cls.occupancy_margin,
-            natural.occupancy() - cls.occupancy_margin
+            natural.occupancy(Dock.DeliverBias) - cls.occupancy_margin
         )
 
         if suitable == []:
@@ -248,7 +248,7 @@ class Main:
         #  Occupancy has higher priority. It will filter based on chargeability only if possible.
 
         # Filter docks by occupancy
-        suitable = [dock for dock in suitable if dock.occupancy() < target_occupancy][:cls.number_of_suggestions]
+        suitable = [dock for dock in suitable if dock.occupancy(Dock.DeliverBias) < target_occupancy][:cls.number_of_suggestions]
 
         # If bike is too low, filter all docks to chargeables, unless there are none.
         if current_bike is not None and current_bike.battery_level < cls.bike_low_batery:

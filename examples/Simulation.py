@@ -1,6 +1,10 @@
-from utils.debug import Debug
+from random import randint as rng
+
+from src.sim import SimUser
 from src.bikes import Dock, Bike
 from src.program import Main
+
+from utils.debug import Debug
 from utils.vis import Point
 print = Debug.labeld_print(label="CaseStudy")
 
@@ -12,7 +16,18 @@ def in_bounds(x, y, _x, _y):
 class Simulations:
     class BigGrid:
         @classmethod
-        def build(cls, k = 10):
+        def create_users(cls):
+            users: list[SimUser] = []
+            for x in range(1000):
+                sim = SimUser(
+                    (rng(0,500), rng(0,500), 0),
+                    (rng(0,500), rng(0,500), 0),
+                    offset_timer=(x//250) * 300 + x*10
+                )
+                users.append(sim)
+            return users
+        @classmethod
+        def build(cls, k = 8):
             docks: list[Dock] = []
             adj: list[list[int]] = []
             x_w = 6
@@ -36,7 +51,7 @@ class Simulations:
             bikes = []
             i = 0
             for dock in docks:
-                for x in range((i % 2)+1):
+                for x in range(5):
                     bike = Bike(battery_level=50)
                     bikes.append(bike)
                     dock.retrieve(bike)

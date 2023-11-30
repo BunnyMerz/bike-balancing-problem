@@ -65,7 +65,7 @@ class SimUser:
         "--CtDe--",
     ]
 
-    chance_to_follow_suggestion = 1
+    chance_to_follow_suggestion = 0.35
     def __init__(self, current_location: GeoPosition, destination: GeoPosition, user_obj: User | None = None, offset_timer: float = 0) -> None:
         self.user_obj: User | None = user_obj
 
@@ -168,7 +168,8 @@ class SimUser:
         if not self.current_dock.empty():
             self.current_bike = self.current_dock.pick_any()
             natural, suggestion = Main.find_ending_dock(*self.dest, self.current_bike)
-            if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []: SimulationResults.total_suggestion_made += 1
+            if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
+                SimulationResults.total_suggestion_made += 1
             if (
                 suggestion.type == suggestion.OnlyEnd
                 and suggestion.end_dest.suitable != []
@@ -201,8 +202,10 @@ class SimUser:
                 self.current_bike = None
                 self.current_dock = None
                 self.state = SimUser.CantStartRun # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+                SimulationResults.angry_users += 1
         else: # User reached an Empty Dock. User gets upset and gives up on using system
             self.state = SimUser.CantPick # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            SimulationResults.angry_users += 1
 
     def StateToSubWithFull(self):
         return
@@ -234,3 +237,25 @@ class SimUser:
     def StateDone(self):
         self.system_exit_time = self.internal_clock.t
         self.state = self.Idle
+
+
+def order_by_time(users: list[SimUser]):
+    return sorted(users, key=lambda x: x.internal_clock.t)
+def insert_by_time(user: SimUser, users: list[SimUser]):
+    x = 0
+    while(x < len(users)):
+        if user.internal_clock.t < users[x].internal_clock.t:
+            users.insert(x, user)
+            return users
+        x += 1
+    users.append(user)
+    return users
+
+def run(users: list[SimUser]):
+    copy_users = users[:]
+    copy_users = order_by_time(copy_users)
+    while(len(copy_users) > 0):
+        user = copy_users.pop(0)
+        user.act()
+        if not user.done():
+            copy_users = insert_by_time(user, copy_users)

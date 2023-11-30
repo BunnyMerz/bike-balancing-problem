@@ -3,72 +3,49 @@ from examples.Subroutes import ChooseSubStation
 from examples.Delivering import ChooseEndStation
 from examples.Simulation import Simulations
 
-from src.sim import SimUser, SimulationResults
+from src.sim import SimUser, SimulationResults, run as run_simulation
 from src.program import Main
 
 from random import randint as rng, seed
 
 from utils.debug import Debug
-print = Debug.print
-# seed(192381293891492729)
+# print = Debug.print
+seed(1923812938914922304923729987698877576)
 
-def order_by_time(users: list[SimUser]):
-    return sorted(users, key=lambda x: x.internal_clock.t)
-def insert_by_time(user: SimUser, users: list[SimUser]):
-    x = 0
-    while(x < len(users)):
-        if user.internal_clock.t < users[x].internal_clock.t:
-            users.insert(x, user)
-            return users
-        x += 1
-    users.append(user)
-    return users
 
 def main():
+    print(f"Users have {SimUser.chance_to_follow_suggestion * 100}% chance to follow suggestion")
     docks, bikes, adj = Simulations.BigGrid.build()
-    
+    users = Simulations.BigGrid.create_users()
 
-    users: list[SimUser] = []
-    for x in range(100):
-        sim = SimUser(
-            (rng(0,1000), rng(0,1000), 0),
-            (rng(0,1000), rng(0,1000), 0),
-            offset_timer=((x%30)+1) * 400
-        )
-        users.append(sim)
-
-
-    copy_users = users[:]
-    copy_users = order_by_time(copy_users)
-    while(len(copy_users) > 0):
-        user = copy_users.pop(0)
-        print(label="step")
-        print(f"=====", user, label="step")
-        user.act()
-        print(f"=====", user, label="step")
-
-        if not user.done():
-            copy_users = insert_by_time(user, copy_users)
+    run_simulation(users)
 
     for dock in docks:
         assert dock.interested_delivery == 0
         assert dock.interested_picking == 0
 
-    print(label="step")
-    for user in users:
-        print(user, label="step")
+    # print(label="step")
+    # for user in users:
+        # print(user, label="step")
     print(f"""
+    Problems reported:
         CantStart:    {len([x for x in users if x.state == x.CantStart])}
         CantPick:     {len([x for x in users if x.state == x.CantPick])}
         CantStartRun: {len([x for x in users if x.state == x.CantStartRun])}
         CantDeliver:  {len([x for x in users if x.state == x.CantDeliver])}""")
     print(f"""
+    Suggestions:
         Made:      {SimulationResults.total_suggestion_made}
-        Taken:     {SimulationResults.total_suggestion_taken}
+        Acepted:   {SimulationResults.total_suggestion_taken}
         Completed: {SimulationResults.total_suggestion_completed}
-        Angry: {SimulationResults.angry_users}""")
+    Total Angry Users: {SimulationResults.angry_users}""")
+    
+    hist = [0 for _ in range(docks[0].capacity + 1)]
+    for dock in docks:
+        hist[dock.bike_count()] += 1
+    print(f"Bike amount histogram 0..{docks[0].capacity}:", hist)
 
-    Main.plot()
+    # Main.plot()
 
 if __name__ == "__main__":
     main()
