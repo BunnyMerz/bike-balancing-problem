@@ -8,7 +8,7 @@ from src.program import Main
 
 from utils.vis import Point
 
-from random import randint as rng, seed
+from random import randint as rng, seed, random
 
 from utils.debug import Debug
 log_print = lambda *a, **b: None
@@ -39,6 +39,37 @@ class Results:
 
         self.dock_capacity = dock_capacity
         self.histogram = histogram
+
+    @classmethod
+    def average(cls, results: list["Results"]):
+        size = len(results)
+        def avg_hist(histograms: list[list[int]]):
+            size = len(histograms)
+            w = len(histograms[0])
+            r = [0 for _ in range(w)]
+            for h in histograms:
+                for c in range(w):
+                    r[c] += h[c]
+            r = [v/size for v in r]
+            return r
+        return Results(
+            CantStart= sum([r.CantStart for r in results])/size,
+            CantPick= sum([r.CantPick for r in results])/size,
+            CantStartRun= sum([r.CantStartRun for r in results])/size,
+            CantDeliver= sum([r.CantDeliver for r in results])/size,
+
+            angry_users = sum([r.angry_users for r in results])/size,
+            total_suggestion_made = sum([r.total_suggestion_made for r in results])/size,
+            total_suggestion_taken = sum([r.total_suggestion_taken for r in results])/size,
+            total_suggestion_completed = sum([r.total_suggestion_completed for r in results])/size,
+
+            distance_travelled_walk = sum([r.distance_travelled_walk for r in results])/size,
+            distance_travelled_bike = sum([r.distance_travelled_bike for r in results])/size,
+            time_inside_system = sum([r.time_inside_system for r in results])/size,
+
+            dock_capacity = sum([r.dock_capacity for r in results])/size,
+            histogram = avg_hist([r.histogram for r in results]),
+        )
 
     def print(self):
         print(f"""  Problems reported:
@@ -111,20 +142,28 @@ def main():
         dock_capacity= max(dock.capacity for dock in docks),
         histogram=hist
     )
-    r.print()
 
-    Main.plot()
+    # Main.plot()
+    return r
 
 if __name__ == "__main__":
-    repeat = 1
-    for x in [0, 0.5, 0.8]:
+    repeat = 30
+    global_seed = random()
+    for x in [0, 0.5, 0.8, 1]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)
+        print('=====---------=====')
         print(f"{SimUser.chance_to_follow_suggestion * 100}% on {repeat} times")
+        try_round = []
+        seed(global_seed)
         for _ in range(repeat):
-            print('=====')
-            main()
-            print('=====')
+            results = main()
+            try_round.append(results)
             SimulationResults.reset()
             Point.clear_points()
+        print("Avg")
+        avg_r = Results.average(try_round)
+        avg_r.print()
+        print('=====---------=====')
+        
