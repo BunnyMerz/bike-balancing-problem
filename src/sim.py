@@ -123,7 +123,7 @@ class SimUser:
         return self.system_entry_time is not None and self.system_exit_time is not None and self.system_entry_time - self.system_exit_time == 0
 
     def angry_enough(self):
-        return self.angry > 20
+        return self.angry > 3
 
     def done(self):
         return self.state < 0

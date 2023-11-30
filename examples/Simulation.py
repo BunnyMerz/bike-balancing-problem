@@ -22,7 +22,7 @@ class Simulations:
                 sim = SimUser(
                     (rng(0,500), rng(0,500), 0),
                     (rng(0,500), rng(0,500), 0),
-                    offset_timer= x*10000
+                    offset_timer= x*300
                 )
                 users.append(sim)
             return users
