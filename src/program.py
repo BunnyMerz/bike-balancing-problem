@@ -3,6 +3,7 @@ from utils.debug import Debug
 from src.bikes import Dock, Bike
 from src.goals import Destination, Goal, PickBike
 print_d = Debug.labeld_print("depth")
+print_count = Debug.labeld_print("count")
 
 
 class Main:
@@ -95,6 +96,8 @@ class Main:
                     +"\n"+
                     f"{len(dock.bikes)}/{dock.capacity}"
                 )
+            
+            label = str(len(dock.bikes))
             p = Point(
                 x=dock.latitude, y=dock.longitude,
                 color = ['red','orange'][dock.charges],
@@ -125,17 +128,24 @@ class Main:
         lat, long, alt: float
             Anchort coordinate
         """
+        cant_be_empty = not cant_be_full
         suitable: list[Dock] = []
         smallest: Dock = cls.docks[0]
         smallest_value: float = Dock.euclidian_distance_point(cls.docks[0], lat, long, alt)
 
         x = 0
         for dock in cls.docks:
+            d = Dock.euclidian_distance_point(dock, lat, long, alt)
+            if ( # 
+                cant_be_full and not dock.full(bias=Dock.DeliverBias)
+                or
+                cant_be_empty and not dock.empty(bias=Dock.PickBias)
+            ): 
+                if d < cls.max_radius:
+                    suitable.append(dock) # Finds all docks that may fit being a suggestion
+
             if cant_be_full and dock.full(): continue
             if not cant_be_full and dock.empty(): continue
-            d = Dock.euclidian_distance_point(dock, lat, long, alt)
-            if d < cls.max_radius:
-                suitable.append(dock) # Finds all docks that may fit being a suggestion
             if d < smallest_value: # Finds the closest dock, even if not suitable
                 smallest = dock
                 smallest_value = d

@@ -1,4 +1,4 @@
-from random import random
+from random import random, randint as rng
 from typing import Callable
 
 from src.bikes import Dock, Bike, User
@@ -31,6 +31,11 @@ class Clock:
         t = Dock.euclidian_distance_point(dock1, lat, long, alt) * [Clock.dist_to_time_walk, Clock.dist_to_time_bike][has_bike]
         self.delay(t)
 
+class SimulationResults:
+    total_suggestion_made = 0
+    total_suggestion_taken = 0
+    total_suggestion_completed = 0
+    angry_users = 0
 
 GeoPosition = tuple[float, float, float]
 class SimUser:
@@ -118,18 +123,22 @@ class SimUser:
     def StateStart(self):
         print("Start")
         natural, suggestion = Main.find_starting_dock(*self.current_location)
+        if suggestion.initial_dest.suitable != []: SimulationResults.total_suggestion_made += 1
         if (
             self.follow_suggestion(natural, suggestion)
             and suggestion.initial_dest.suitable != []
         ):                    # Will follow suggestion and go to random suggestion
             print("Suggested Start")
+            SimulationResults.total_suggestion_taken += 1
             self.state = SimUser.ToInitialDock
 
-            self.current_dock = suggestion.initial_dest.suitable[0]
+            s = suggestion.initial_dest.suitable
+            self.current_dock = s[rng(0, len(s)-1)]
             self.active_goal = suggestion
 
             self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
             self.current_location = self.current_dock.coords()
+            self.current_dock.show_picking_interest()
         elif natural != None: # User will go straight to starting Dock
             print("Natural Start")
             self.state = SimUser.ToInitialDock
@@ -141,6 +150,7 @@ class SimUser:
         else:                 # No Option. User gets upset and gives up on using system
             print("No option")
             self.state = SimUser.CantStart # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            SimulationResults.angry_users += 1
 
     def StateToInitialDock(self):
         print("ToInitialDock")
@@ -149,24 +159,33 @@ class SimUser:
             if self.active_goal.validate(self.current_dock, self.active_goal.initial_dest):
                 self.achieved_goals.append(self.active_goal)
                 self.active_goal = None
+                SimulationResults.total_suggestion_completed += 1
+                self.current_dock.done_with_picking_interest()
+            else:
+                self.current_dock.lose_picking_interest()
+
 
         if not self.current_dock.empty():
             self.current_bike = self.current_dock.pick_any()
             natural, suggestion = Main.find_ending_dock(*self.dest, self.current_bike)
+            if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []: SimulationResults.total_suggestion_made += 1
             if (
                 suggestion.type == suggestion.OnlyEnd
                 and suggestion.end_dest.suitable != []
                 and self.follow_suggestion(natural, suggestion)
             ):                    # Will follow suggestion and go to random suggestion
                 print("Suggested End")
+                SimulationResults.total_suggestion_taken += 1
                 self.state = SimUser.ToEnd
 
-                self.current_dock = suggestion.end_dest.suitable[0]
+                s = suggestion.end_dest.suitable
+                self.current_dock = s[rng(0, len(s)-1)]
                 self.active_goal = suggestion
 
                 self.system_entry_time = self.internal_clock.t
                 self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=True)
                 self.current_location = self.current_dock.coords()
+                self.current_dock.show_deliver_interest()
             elif natural != None: # User will go straight to ending Dock
                 print("Natural End")
                 self.state = SimUser.ToEnd
@@ -191,18 +210,26 @@ class SimUser:
         return
     def StateToEnd(self):
         print("ToEnd")
-        # Validate Goals
+        if self.active_goal is not None and self.active_goal.type == Goal.OnlyEnd:
+            if self.active_goal.validate(self.current_dock, self.active_goal.end_dest):
+                SimulationResults.total_suggestion_completed += 1
+                self.achieved_goals.append(self.active_goal)
+                self.active_goal = None
+                self.current_dock.done_with_deliver_interest()
+            else:
+                self.current_dock.lose_deliver_interest()
 
         if not self.current_dock.full():
             print("Not full end, retrieving.")
             self.current_dock.retrieve(self.current_bike)
             self.current_bike = None
             self.current_dock = None
+            self.state = SimUser.Done
         else:
             # TODO: Fix this later, he should look for another dock to leave his Bike. Find_ending_dock should do the trick
             self.state = SimUser.CantDeliver
-            return
-        self.state = SimUser.Done
+            SimulationResults.angry_users += 1
+            
 
     def StateDone(self):
         self.system_exit_time = self.internal_clock.t

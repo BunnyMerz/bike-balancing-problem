@@ -20,9 +20,9 @@ class Bike(Entity):
         return f"<Bike[{self.id}]: {int(self.battery_level)}%, {self.mileage}km>"
 
 class Dock(Entity):
-    NeitherBias = -1 # For natural stations
-    EmptyBias = 0 # When delivering
-    FullBias = 1 # When picking
+    PickBias = -1 # When picking. Considers Bike Delivering a good thing, and Bike Pick bad 
+    NeitherBias = 0 # For natural stations
+    DeliverBias = 1 # Used when delivering. Considers Bike Pick a good thing, and Bike Delivering bad
     def __init__(self, lat: float, lon: float, alt: float, k: int, charges: bool = True) -> None:
         super().__init__()
         self.latitude: float = lat
@@ -34,7 +34,7 @@ class Dock(Entity):
         self.charges: bool = charges
 
         self.interested_delivery = 0
-        self.interested_retrieving = 0
+        self.interested_picking = 0
 
 
     def __repr__(self) -> str:
@@ -63,26 +63,28 @@ class Dock(Entity):
     def done_with_deliver_interest(self):
         self.interested_delivery -= 1
 
-    def show_retrieving_interest(self):
-        self.interested_retrieving += 1
-    def lose_retrieving_interest(self):
-        self.interested_retrieving -= 1
-    def done_with_retrieving_interest(self):
-        self.interested_retrieving -= 1
+    def show_picking_interest(self):
+        self.interested_picking += 1
+    def lose_picking_interest(self):
+        self.interested_picking -= 1
+    def done_with_picking_interest(self):
+        self.interested_picking -= 1
 
-    def bike_count(self, bias: int = NeitherBias):
+    def bike_count(self, bias: int = NeitherBias, ttt=False):
         bike_amount = len(self.bikes)
-        if bias == self.EmptyBias:
-            if bike_amount == self.capacity:
-                return bike_amount
-            max(len(self.bikes) + self.inte)
-        elif bias == self.FullBias:
-            pass
-        return bike_amount
-    def occupancy(self):
-        return len(self.bikes)/self.capacity * 100
-    def full  (self): return len(self.bikes) >= self.capacity
-    def empty (self): return len(self.bikes) == 0
+        if bias == self.NeitherBias:
+            return bike_amount
+        
+        if ((bias == self.DeliverBias and bike_amount == self.capacity) or (bias == self.PickBias and bike_amount == 0)):
+                return bike_amount # This avoids making users try to deliver to a future-empty or future-full dock
+        
+        prediction = bike_amount - self.interested_picking + self.interested_delivery
+        return min(max(prediction, 0), self.capacity)
+
+    def occupancy(self, bias: int = NeitherBias):
+        return self.bike_count(bias)/self.capacity * 100
+    def full  (self, bias: int = NeitherBias): return self.bike_count(bias) >= self.capacity
+    def empty (self, bias: int = NeitherBias): return self.bike_count(bias) == 0
     def coords(self): return (self.latitude, self.longitude, self.altitude)
 
     def retrieve(self, bike: Bike):
@@ -99,7 +101,7 @@ class Dock(Entity):
         x = 1
         while(x < len(self.bikes)):
             if self.bikes[x].battery_level > self.bikes[bike_i].battery_level:
-                bike = x
+                bike_i = x
             x+=1
         return self.pick(bike_i)
 

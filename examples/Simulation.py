@@ -12,7 +12,7 @@ def in_bounds(x, y, _x, _y):
 class Simulations:
     class BigGrid:
         @classmethod
-        def build(cls, k = 10, bike_amount = 2):
+        def build(cls, k = 10):
             docks: list[Dock] = []
             adj: list[list[int]] = []
             x_w = 6
@@ -36,7 +36,7 @@ class Simulations:
             bikes = []
             i = 0
             for dock in docks:
-                for x in range(bike_amount):
+                for x in range((i % 2)+1):
                     bike = Bike(battery_level=50)
                     bikes.append(bike)
                     dock.retrieve(bike)
