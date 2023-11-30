@@ -6,6 +6,7 @@ from src.goals import Goal, PickBike
 from src.program import Main
 
 from utils.debug import Debug
+_print = print
 print = Debug.labeld_print("Simulator")
 
 
@@ -37,6 +38,13 @@ class SimulationResults:
     total_suggestion_completed = 0
     angry_users = 0
 
+    @classmethod
+    def reset(cls):
+        cls.total_suggestion_made = 0
+        cls.total_suggestion_taken = 0
+        cls.total_suggestion_completed = 0
+        cls.angry_users = 0
+
 GeoPosition = tuple[float, float, float]
 class SimUser:
     Start  = 0
@@ -45,11 +53,12 @@ class SimUser:
     ToSubWithEmpty = 3
     ToEnd  = 4
     Done = 5
-    Idle = 6
-    CantStart = 7
-    CantPick = 8
-    CantStartRun = 9
-    CantDeliver = 10
+    FindEnd = 6
+    Idle = -1
+    CantStart = -2
+    CantPick = -3
+    CantStartRun = -4
+    CantDeliver = -5
 
     state_names = [
         "At Start",
@@ -57,15 +66,17 @@ class SimUser:
         "SubWFull",
         "SubWEmpt",
         "ToTheEnd",
-        "--Done--",
-        "--Idle--",
-        "--CtSt--",
-        "--CtPi--",
-        "--CtSR--",
+        "  Done  ",
+        "RetryEnd"
+
         "--CtDe--",
+        "--CtSR--",
+        "--CtPi--",
+        "--CtSt--",
+        "--Idle--",
     ]
 
-    chance_to_follow_suggestion = 0.35
+    chance_to_follow_suggestion = 1
     def __init__(self, current_location: GeoPosition, destination: GeoPosition, user_obj: User | None = None, offset_timer: float = 0) -> None:
         self.user_obj: User | None = user_obj
 
@@ -83,6 +94,14 @@ class SimUser:
 
         self.system_entry_time: float = None
         self.system_exit_time: float = None
+        self.distance_travelled_walk: float = 0
+        self.distance_travelled_bike: float = 0
+        self.angry = 0
+
+    def time_inside_system(self):
+        if self.system_entry_time is not None and self.system_exit_time is not None:
+            return self.system_exit_time - self.system_entry_time
+        return 0
 
     def __str__(self) -> str:
         base          = f"<User[t:{int(self.internal_clock.t)}][{self.state_names[self.state]}]({len(self.achieved_goals)}):"
@@ -103,8 +122,11 @@ class SimUser:
     def canceled_use(self):
         return self.system_entry_time is not None and self.system_exit_time is not None and self.system_entry_time - self.system_exit_time == 0
 
+    def angry_enough(self):
+        return self.angry > 20
+
     def done(self):
-        return self.state >= 6
+        return self.state < 0
 
     def follow_suggestion(self, natural: Dock, suggestion: Goal):
         return random() < self.chance_to_follow_suggestion
@@ -117,7 +139,8 @@ class SimUser:
             self.StateToSubWithFull,
             self.StateToSubWithEmpty,
             self.StateToEnd,
-            self.StateDone
+            self.StateDone,
+            self.StateFindEnd
         ][self.state]()
 
     def StateStart(self):
@@ -136,6 +159,7 @@ class SimUser:
             self.current_dock = s[rng(0, len(s)-1)]
             self.active_goal = suggestion
 
+            self.distance_travelled_walk += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
             self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
             self.current_location = self.current_dock.coords()
             self.current_dock.show_picking_interest()
@@ -145,12 +169,14 @@ class SimUser:
 
             self.current_dock = natural
 
+            self.distance_travelled_walk += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
             self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
             self.current_location = self.current_dock.coords()
         else:                 # No Option. User gets upset and gives up on using system
             print("No option")
             self.state = SimUser.CantStart # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
             SimulationResults.angry_users += 1
+            self.angry += 1
 
     def StateToInitialDock(self):
         print("ToInitialDock")
@@ -184,6 +210,7 @@ class SimUser:
                 self.active_goal = suggestion
 
                 self.system_entry_time = self.internal_clock.t
+                self.distance_travelled_bike += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
                 self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=True)
                 self.current_location = self.current_dock.coords()
                 self.current_dock.show_deliver_interest()
@@ -194,6 +221,7 @@ class SimUser:
                 self.current_dock = natural
 
                 self.system_entry_time = self.internal_clock.t
+                self.distance_travelled_bike += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
                 self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
                 self.current_location = self.current_dock.coords()
             else:                 # No Option. User gets upset and gives up on using system
@@ -204,8 +232,53 @@ class SimUser:
                 self.state = SimUser.CantStartRun # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
                 SimulationResults.angry_users += 1
         else: # User reached an Empty Dock. User gets upset and gives up on using system
-            self.state = SimUser.CantPick # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            self.state = SimUser.Start # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
             SimulationResults.angry_users += 1
+            self.angry += 1
+            if self.angry_enough():
+                self.state = self.CantPick
+
+    def StateFindEnd(self):
+        "Portion taken from StateToInitialDock"
+        natural, suggestion = Main.find_ending_dock(*self.dest, self.current_bike)
+        if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
+            SimulationResults.total_suggestion_made += 1
+        if (
+            suggestion.type == suggestion.OnlyEnd
+            and suggestion.end_dest.suitable != []
+            and self.follow_suggestion(natural, suggestion)
+        ):                    # Will follow suggestion and go to random suggestion
+            print("Suggested End")
+            SimulationResults.total_suggestion_taken += 1
+            self.state = SimUser.ToEnd
+
+            s = suggestion.end_dest.suitable
+            self.current_dock = s[rng(0, len(s)-1)]
+            self.active_goal = suggestion
+
+            self.system_entry_time = self.internal_clock.t
+            self.distance_travelled_bike += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
+            self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=True)
+            self.current_location = self.current_dock.coords()
+            self.current_dock.show_deliver_interest()
+        elif natural != None: # User will go straight to ending Dock
+            print("Natural End")
+            self.state = SimUser.ToEnd
+
+            self.current_dock = natural
+
+            self.system_entry_time = self.internal_clock.t
+            self.distance_travelled_bike += Dock.euclidian_distance_point(self.current_dock, *self.current_location)
+            self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
+            self.current_location = self.current_dock.coords()
+        else:                 # No Option. User gets upset and gives up on using system
+            print("No option")
+            self.current_dock.retrieve(self.current_bike)
+            self.current_bike = None
+            self.current_dock = None
+            self.state = SimUser.CantStartRun # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
+            SimulationResults.angry_users += 1
+            self.angry += 1
 
     def StateToSubWithFull(self):
         return
@@ -223,18 +296,23 @@ class SimUser:
                 self.current_dock.lose_deliver_interest()
 
         if not self.current_dock.full():
-            print("Not full end, retrieving.")
+            print("Dock not full, delivering bike.")
+            self.distance_travelled_walk += Dock.euclidian_distance_point(self.current_dock, *self.dest)
             self.current_dock.retrieve(self.current_bike)
             self.current_bike = None
             self.current_dock = None
             self.state = SimUser.Done
         else:
             # TODO: Fix this later, he should look for another dock to leave his Bike. Find_ending_dock should do the trick
-            self.state = SimUser.CantDeliver
+            self.state = SimUser.FindEnd
             SimulationResults.angry_users += 1
+            self.angry += 1
+            if self.angry_enough():
+                self.state = self.CantDeliver
             
 
     def StateDone(self):
+        print("StateIdle")
         self.system_exit_time = self.internal_clock.t
         self.state = self.Idle
 
