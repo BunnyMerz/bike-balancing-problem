@@ -50,7 +50,7 @@ class Results:
             for h in histograms:
                 for c in range(w):
                     r[c] += h[c]
-            r = [v/size for v in r]
+            r = [round(v/size, 2) for v in r]
             return r
         return Results(
             CantStart= sum([r.CantStart for r in results])/size,
@@ -143,11 +143,11 @@ def main():
         histogram=hist
     )
 
-    # Main.plot()
+    Main.plot()
     return r
 
 if __name__ == "__main__":
-    repeat = 30
+    repeat = 1
     global_seed = random()
     for x in [0, 0.5, 0.8, 1]:
         SimUser.chance_to_follow_suggestion = x

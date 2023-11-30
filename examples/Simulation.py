@@ -27,7 +27,7 @@ class Simulations:
                 users.append(sim)
             return users
         @classmethod
-        def build(cls, k = 5):
+        def build(cls, k = 9):
             docks: list[Dock] = []
             adj: list[list[int]] = []
             x_w = 6
@@ -51,7 +51,7 @@ class Simulations:
             bikes = []
             i = 0
             for dock in docks:
-                for x in range(3):
+                for x in range(4):
                     bike = Bike(battery_level=50)
                     bikes.append(bike)
                     dock.retrieve(bike)
