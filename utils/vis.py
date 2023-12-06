@@ -14,8 +14,8 @@ class Point:
     def next_id(self): Point._id += 1; return Point._id - 1
     def __init__(self, x: int, y: int, color: str, label: str, width: float = 1.0):
         self.id = self.next_id()
-        self.x = x + 0.00001 * self.id
-        self.y = y + 0.00001 * self.id
+        self.x = x + 0.00000001 * self.id
+        self.y = y + 0.00000001 * self.id
         self.color = color
         self.label = label
         self.width = width

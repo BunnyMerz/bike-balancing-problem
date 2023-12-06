@@ -1,15 +1,15 @@
 # type(origin|destiny|both);...
-# origin; id;        x;  y; radius; weight; time_active, ... | *; common_destinies, ..., *chance_for_rest
-# desitny;     id;        x;  y; radius; weight; time_active, ...;
+# origin      ;id        ;x  ;y ;radius ;weight ;time_active, ... | * ;common_destinies, ..., *chance_for_rest
+# desitny     ;id        ;x  ;y ;radius ;weight ;time_active, ...;
 
-origin;        barcas;    0;  0; 1;      20;     7,8,9,10,11,*0.3;    centro, uff_pv, uff_grag, *0.3
-destiny;       barcas;    0;  0; 1;      20;     17,18,19,20,21,*0.3; centro, uff_pv, uff_grag, *0.3
+origin        ;barcas    ;0  ;0 ;1      ;20     ;7,8,9,10,11,*0.3      ;centro, uff_pv, uff_grag, *0.3
+destiny       ;barcas    ;0  ;0 ;1      ;20     ;17,18,19,20,21,*0.3   ;centro, uff_pv, uff_grag, *0.3
 
-origin;        centro;    0;  0; 7;      20;     *;
-destiny;       centro;    0;  0; 7;      20;     *;
+origin        ;centro    ;0  ;0 ;7      ;20     ;*                     ;
+destiny       ;centro    ;0  ;0 ;7      ;20     ;*                     ;
 
-origin;        uff_pv;    0;  0; 4;      20;     7,8,9,10,11;          centro, uff_pv, uff_grag, *0.3
-destiny;       uff_pv;    0;  0; 4;      20;     7,8,9,10,11;          centro, uff_pv, uff_grag, *0.3
+origin        ;uff_pv    ;0  ;0 ;4      ;20     ;7,8,9,10,11           ;centro, uff_pv, uff_grag, *0.3
+destiny       ;uff_pv    ;0  ;0 ;4      ;20     ;7,8,9,10,11           ;centro, uff_pv, uff_grag, *0.3
 
-origin;        uff_grag;  0;  0; 4;      20;     7,8,9,10,11;          centro, uff_pv, uff_grag, *0.3
-destiny;       uff_grag;  0;  0; 4;      20;     7,8,9,10,11;          centro, uff_pv, uff_grag, *0.3
+origin        ;uff_grag  ;0  ;0 ;4      ;20     ;7,8,9,10,11           ;centro, uff_pv, uff_grag, *0.3
+destiny       ;uff_grag  ;0  ;0 ;4      ;20     ;7,8,9,10,11           ;centro, uff_pv, uff_grag, *0.3

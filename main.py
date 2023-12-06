@@ -127,11 +127,15 @@ def main():
     # print(f"Users have {SimUser.chance_to_follow_suggestion * 100}% chance to follow suggestion")
     nikiti = GraphLoader('niteroi')
     docks = nikiti.docks
+    s_intes = nikiti.start_interests
+    e_intes = nikiti.end_interests
     Main.init(docks=nikiti.docks, bikes=nikiti.bikes, adj=nikiti.adj, distances=nikiti.dist)
-    Main.plot()
-    users = Simulations.BigGrid.create_users()
+    users = Simulations.BigGrid.create_users(s_intes, e_intes)
 
     run_simulation(users)
+    Main.plot()
+    SimUser.show()
+    SimUser.reset_points()
 
     for dock in docks:
         assert dock.interested_delivery == 0

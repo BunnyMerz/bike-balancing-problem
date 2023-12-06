@@ -39,6 +39,12 @@ class Clock:
             t = dist / [Clock.walking_speed, Clock.bike_speed][has_bike]
         self.delay(t)
 
+    @classmethod
+    def to_hours(self, _v: float):
+        h = _v / (60 * 24)
+        while h > 24: h -= 24
+        return h
+
 class SimulationResults:
     total_suggestion_made = 0
     total_suggestion_taken = 0
@@ -55,6 +61,8 @@ class SimulationResults:
 
 GeoPosition = tuple[float, float, float]
 class SimUser:
+    points: list[Point] = []
+
     Start  = 0
     ToInitialDock = 1
     ToSubWithFull = 2
@@ -133,7 +141,14 @@ class SimUser:
     
     def plot(self):
         x,y,z = self.current_location
-        Point(x+200+rng(0,30), y, ['gray','purple','violet','pink','red'][self.angry], '.', 0.1)
+        self.points.append((x+rng(-10, 10), y+rng(-10, 10), ['gray','purple','violet','pink','red'][self.angry], '.', 0.1))
+    @classmethod
+    def show(cls):
+        for point in cls.points:
+            Point(*point)
+    @classmethod
+    def reset_points(cls):
+        cls.points = []
 
     def canceled_use(self):
         return self.system_entry_time is not None and self.system_exit_time is not None and self.system_entry_time - self.system_exit_time == 0
@@ -147,7 +162,7 @@ class SimUser:
         if self.angry_enough(): self.plot()
     
     def angry_enough(self):
-        return self.angry > 3
+        return self.angry > 2
 
     def done(self):
         return self.state < 0

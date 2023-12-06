@@ -1,4 +1,5 @@
 from datetime import datetime as date
+from random import randint as rng
 
 
 class Entity:
@@ -23,8 +24,10 @@ class Dock(Entity):
     PickBias = -1 # When picking. Considers Bike Delivering a good thing, and Bike Pick bad 
     NeitherBias = 0 # For natural stations
     DeliverBias = 1 # Used when delivering. Considers Bike Pick a good thing, and Bike Delivering bad
-    def __init__(self, lat: float, lon: float, alt: float, k: int, charges: bool = True) -> None:
+    def __init__(self, dock_id:int, lat: float, lon: float, alt: float, k: int, charges: bool = True) -> None:
         super().__init__()
+        self.dock_id = dock_id
+
         self.latitude: float = lat
         self.longitude: float = lon
         self.altitude: float = alt
@@ -41,6 +44,11 @@ class Dock(Entity):
         return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {self.bikes}>"
     def simple(self) -> str:
         return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {len(self.bikes)} Bikes>"
+
+    def geo_position(self):
+        return (self.latitude, self.longitude, self.altitude)
+    def rng_geo_position(self, radius):
+        return (self.latitude + rng(-radius, radius), self.longitude + rng(-radius, radius), self.altitude)
 
     @classmethod
     def distance(cls, dock_1: "Dock", dock_2: "Dock"):
