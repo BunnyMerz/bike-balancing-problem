@@ -1,3 +1,5 @@
+from heatmapper.values_to_maps import save_to_file_maps
+
 from examples.graphs.graph_loader import GraphLoader
 
 from examples.Picking import ChooseStartingStation
@@ -5,6 +7,7 @@ from examples.Subroutes import ChooseSubStation
 from examples.Delivering import ChooseEndStation
 from examples.Simulation import Simulations
 
+from src.bikes import to_map
 from src.sim import SimUser, SimulationResults, run as run_simulation
 from src.program import Main
 
@@ -133,6 +136,7 @@ def main():
     users = Simulations.BigGrid.create_users(s_intes, e_intes)
 
     run_simulation(users)
+    save_to_file_maps(Main.to_map())
     Main.plot()
     SimUser.show()
     SimUser.reset_points()

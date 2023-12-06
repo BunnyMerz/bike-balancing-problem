@@ -187,7 +187,8 @@ class SimUser:
         natural, suggestion = Main.find_starting_dock(*self.current_location)
         if suggestion.initial_dest.suitable != []: SimulationResults.total_suggestion_made += 1
         if (
-            self.follow_suggestion(natural, suggestion)
+            natural is not None
+            and self.follow_suggestion(natural, suggestion)
             and suggestion.initial_dest.suitable != []
         ):                    # Will follow suggestion and go to random suggestion
             print("Suggested Start")
@@ -202,7 +203,7 @@ class SimUser:
             self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=False)
             self.current_location = self.current_dock.coords()
             self.current_dock.show_picking_interest()
-        elif natural != None: # User will go straight to starting Dock
+        elif natural is not None: # User will go straight to starting Dock
             print("Natural Start")
             self.state = SimUser.ToInitialDock
 
@@ -215,7 +216,7 @@ class SimUser:
             print("No option")
             self.state = SimUser.CantStart # TODO: Better behaviour in case of upsetting the user. Save to some variable later?
             SimulationResults.angry_users += 1
-            self.angry += 1
+            self.angry += 5
 
     def StateToInitialDock(self):
         print("ToInitialDock")
@@ -236,7 +237,8 @@ class SimUser:
             if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
                 SimulationResults.total_suggestion_made += 1
             if (
-                suggestion.type == suggestion.OnlyEnd
+                natural is not None
+                and suggestion.type == suggestion.OnlyEnd
                 and suggestion.end_dest.suitable != []
                 and self.follow_suggestion(natural, suggestion)
             ):                    # Will follow suggestion and go to random suggestion
@@ -253,7 +255,7 @@ class SimUser:
                 self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=True)
                 self.current_location = self.current_dock.coords()
                 self.current_dock.show_deliver_interest()
-            elif natural != None: # User will go straight to ending Dock
+            elif natural is not None: # User will go straight to ending Dock
                 print("Natural End")
                 self.state = SimUser.ToEnd
 
@@ -283,7 +285,8 @@ class SimUser:
         if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
             SimulationResults.total_suggestion_made += 1
         if (
-            suggestion.type == suggestion.OnlyEnd
+            natural is not None
+            and suggestion.type == suggestion.OnlyEnd
             and suggestion.end_dest.suitable != []
             and self.follow_suggestion(natural, suggestion)
         ):                    # Will follow suggestion and go to random suggestion
@@ -300,7 +303,7 @@ class SimUser:
             self.internal_clock.add_time_taken_from_to_point(self.current_dock, *self.current_location, has_bike=True)
             self.current_location = self.current_dock.coords()
             self.current_dock.show_deliver_interest()
-        elif natural != None: # User will go straight to ending Dock
+        elif natural is not None: # User will go straight to ending Dock
             print("Natural End")
             self.state = SimUser.ToEnd
 

@@ -1,0 +1,144 @@
+
+    <html>
+    <head>
+        <title>Heatmaps</title>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <!-- <script type="module" src="index.js"></script> -->
+    </head>
+    <body>
+        <div id="floating-panel">
+        <button id="toggle-heatmap">Toggle Heatmap</button>
+        <button id="change-gradient">Change gradient</button>
+        <button id="change-radius">Change radius</button>
+        <button id="change-opacity">Change opacity</button>
+        </div>
+        <div id="map"></div>
+
+        <!-- 
+        The `defer` attribute causes the callback to execute after the full HTML
+        document has been parsed. For non-blocking uses, avoiding race conditions,
+        and consistent behavior across browsers, consider loading using Promises.
+        See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
+        for more information.
+        -->
+        <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&libraries=visualization&v=weekly"
+        defer
+        ></script>
+    </body>
+    <script>
+        // This example requires the Visualization library. Include the libraries=visualization
+        // parameter when you first load the API. For example:
+        // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization">
+        let map, heatmap;
+
+        function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 14,
+            center: {lat: -22.903892, lng: -43.105053},
+        });
+        heatmap = new google.maps.visualization.HeatmapLayer({
+            data: getPoints(),
+            map: map,
+        });
+        heatmap.set("radius", 40)
+        document
+            .getElementById("toggle-heatmap")
+            .addEventListener("click", toggleHeatmap);
+        document
+            .getElementById("change-gradient")
+            .addEventListener("click", changeGradient);
+        document
+            .getElementById("change-opacity")
+            .addEventListener("click", changeOpacity);
+        document
+            .getElementById("change-radius")
+            .addEventListener("click", changeRadius);
+        }
+
+        function toggleHeatmap() {
+        heatmap.setMap(heatmap.getMap() ? null : map);
+        }
+
+        function changeGradient() {
+        const gradient = [
+            "rgba(0, 255, 255, 0)",
+            "rgba(0, 255, 255, 1)",
+            "rgba(0, 191, 255, 1)",
+            "rgba(0, 127, 255, 1)",
+            "rgba(0, 63, 255, 1)",
+            "rgba(0, 0, 255, 1)",
+            "rgba(0, 0, 223, 1)",
+            "rgba(0, 0, 191, 1)",
+            "rgba(0, 0, 159, 1)",
+            "rgba(0, 0, 127, 1)",
+            "rgba(63, 0, 91, 1)",
+            "rgba(127, 0, 63, 1)",
+            "rgba(191, 0, 31, 1)",
+            "rgba(255, 0, 0, 1)",
+        ];
+
+        heatmap.set("gradient", heatmap.get("gradient") ? null : gradient);
+        }
+
+        function changeRadius() {
+        heatmap.set("radius", heatmap.get("radius") ? null : 40);
+        }
+
+        function changeOpacity() {
+        heatmap.set("opacity", heatmap.get("opacity") ? null : 0.2);
+        }
+
+        // Heatmap data: 500 Points
+        function getPoints() {
+        return [
+            				{location: new google.maps.LatLng(-22.932763841612868, -43.09951873904216), weight: 57},
+				{location: new google.maps.LatLng(-22.92330613020268, -43.09512242217238), weight: 42},
+				{location: new google.maps.LatLng(-22.915138106712064, -43.0956719617811), weight: 50},
+				{location: new google.maps.LatLng(-22.908173791946382, -43.100251458520454), weight: 44},
+				{location: new google.maps.LatLng(-22.90697008322145, -43.10382346597716), weight: 45},
+				{location: new google.maps.LatLng(-22.905680395301875, -43.106113214346834), weight: 51},
+				{location: new google.maps.LatLng(-22.90318699865737, -43.107761833173), weight: 53},
+				{location: new google.maps.LatLng(-22.901725352348524, -43.11032635134704), weight: 45},
+				{location: new google.maps.LatLng(-22.899661851677212, -43.11215815004278), weight: 38},
+				{location: new google.maps.LatLng(-22.896738559059518, -43.11261609971672), weight: 36},
+				{location: new google.maps.LatLng(-22.89390124563646, -43.11353199906459), weight: 54},
+				{location: new google.maps.LatLng(-22.894073204025737, -43.11710400652129), weight: 43},
+				{location: new google.maps.LatLng(-22.890548057045574, -43.117561956195225), weight: 76},
+				{location: new google.maps.LatLng(-22.887194868454692, -43.118294675673525), weight: 245},
+				{location: new google.maps.LatLng(-22.883583742279892, -43.11930216495618), weight: 51},
+				{location: new google.maps.LatLng(-22.88461549261555, -43.12250781267373), weight: 284},
+				{location: new google.maps.LatLng(-22.88762476442788, -43.12168350326065), weight: 637},
+				{location: new google.maps.LatLng(-22.89089197382413, -43.12095078378235), weight: 273},
+				{location: new google.maps.LatLng(-22.894245162415015, -43.1205844240432), weight: 41},
+				{location: new google.maps.LatLng(-22.89347134966327, -43.12379007176075), weight: 46},
+				{location: new google.maps.LatLng(-22.890118161072387, -43.12424802143468), weight: 249},
+				{location: new google.maps.LatLng(-22.885561263756568, -43.12534710065213), weight: 138},
+				{location: new google.maps.LatLng(-22.896050725502413, -43.12598823019564), weight: 399},
+				{location: new google.maps.LatLng(-22.89656660067024, -43.129010698043615), weight: 564},
+				{location: new google.maps.LatLng(-22.899059997314744, -43.130842496739355), weight: 45},
+				{location: new google.maps.LatLng(-22.901639373153888, -43.13322383504382), weight: 34},
+				{location: new google.maps.LatLng(-22.904304728187668, -43.135330403543925), weight: 41},
+				{location: new google.maps.LatLng(-22.906712145637535, -43.133407014913395), weight: 47},
+				{location: new google.maps.LatLng(-22.90808781275174, -43.13001818732627), weight: 36},
+				{location: new google.maps.LatLng(-22.907314, -43.126263), weight: 32},
+				{location: new google.maps.LatLng(-22.904906582550133, -43.12369848182596), weight: 73},
+				{location: new google.maps.LatLng(-22.899661851677212, -43.12690412954351), weight: 47},
+				{location: new google.maps.LatLng(-22.90284308187882, -43.12662935973915), weight: 43},
+				{location: new google.maps.LatLng(-22.901553393959247, -43.12214145293458), weight: 215},
+				{location: new google.maps.LatLng(-22.90378885301984, -43.116920826651715), weight: 63},
+				{location: new google.maps.LatLng(-22.90181133154316, -43.114356308477674), weight: 45},
+				{location: new google.maps.LatLng(-22.907142041610722, -43.11279927958629), weight: 38},
+				{location: new google.maps.LatLng(-22.9055084369126, -43.11041794128183), weight: 52},
+				{location: new google.maps.LatLng(-22.909119563087398, -43.11023476141225), weight: 43},
+				{location: new google.maps.LatLng(-22.912042855705092, -43.10950204193396), weight: 41},
+
+        ]
+        }
+
+        window.initMap = initMap;
+    </script>
+    </html>
+    

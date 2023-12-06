@@ -1,6 +1,8 @@
 from random import randint as rng
+
+from utils.vis import Point
 from utils.debug import Debug
-from src.bikes import Dock, Bike
+from src.bikes import Dock, Bike, to_map
 from src.goals import Destination, Goal, PickBike
 print_d = Debug.labeld_print("depth")
 print_count = Debug.labeld_print("count")
@@ -92,8 +94,16 @@ class Main:
         to_graph()
 
     @classmethod
+    def to_map(cls):
+        values = []
+        for dock in cls.docks:
+            long, lat = dock.longitude, dock.latitude
+            w = dock.times_picked
+            values.append((long, lat, w))
+        return values
+
+    @classmethod
     def plot(cls):
-        from utils.vis import Point
         Point.clear_points()
         points: list[Point] = []
         for dock in cls.docks:
@@ -141,13 +151,13 @@ class Main:
         x = 0
         for dock in cls.docks:
             d = Dock.euclidian_distance_point(dock, lat, long, alt)
+            if d > cls.max_radius: continue
             if ( # 
                 cant_be_full and not dock.full(bias=Dock.DeliverBias)
                 or
                 cant_be_empty and not dock.empty(bias=Dock.PickBias)
             ): 
-                if d < cls.max_radius:
-                    suitable.append(dock) # Finds all docks that may fit being a suggestion
+                suitable.append(dock) # Finds all docks that may fit being a suggestion
 
             if cant_be_full and dock.full(): continue
             if not cant_be_full and dock.empty(): continue
@@ -168,6 +178,7 @@ class Main:
             User's current coordinates
         """
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=False)
+        if natural is None: return None, None
         
         target_occupancy = min(
             cls.max_occupancy + cls.occupancy_margin,
@@ -187,6 +198,7 @@ class Main:
         Returns a natural choice and a Goal with suitable docks as possible goal achievment
         """
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=True)
+        if natural is None: return None, None
 
         available_bikes = chosen_dock.bikes
         suitable_bikes = []
@@ -238,6 +250,7 @@ class Main:
             User's current bike
         """
         natural, suitable = cls.find_natural_and_suitable(lat, long, alt, cant_be_full=True)
+        if natural is None: return None, None
 
         chargeable = Destination.EITHER
         target_occupancy = min(

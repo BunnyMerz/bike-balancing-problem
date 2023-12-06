@@ -72,7 +72,7 @@ class Simulations:
                 for x in range(4):
                     bike = Bike(battery_level=50)
                     bikes.append(bike)
-                    dock.retrieve(bike)
+                    dock.add_bike(bike)
                 i += 1
 
             Main.init_from_basic(docks, bikes, adj)

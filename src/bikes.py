@@ -2,6 +2,13 @@ from datetime import datetime as date
 from random import randint as rng
 
 
+def to_map(long, lat):
+    ox, oy = -373, 202
+    mac_x, mac_y = -22.907314, -43.126263
+    dx, dy = 0.0014*(mac_x/ox), -0.000429*(mac_y/oy)
+    # Translate and zoom in/out
+    return ((long - ox) * dx  ) + mac_x, ((lat - oy) * dy ) + mac_y
+
 class Entity:
     _id = 0
     @classmethod
@@ -39,6 +46,8 @@ class Dock(Entity):
         self.interested_delivery = 0
         self.interested_picking = 0
 
+        self.times_picked = 0
+        self.times_retrieved = 0
 
     def __repr__(self) -> str:
         return f"<Dock[{self.id}]({['N', 'C'][int(self.charges)]}): ({int(self.latitude)}, {int(self.longitude)}, {int(self.altitude)}) {self.bikes}>"
@@ -96,10 +105,17 @@ class Dock(Entity):
     def coords(self): return (self.latitude, self.longitude, self.altitude)
 
     def retrieve(self, bike: Bike):
+        self.times_retrieved += 1
+        return self.add_bike(bike)
+    def add_bike(self, bike: Bike):
         assert len(self.bikes) < self.capacity
         bike.dock = self
         self.bikes.append(bike)
+
     def pick(self, bike_i: int | Bike):
+        self.times_picked += 1
+        return self.remove_bike(bike_i)
+    def remove_bike(self, bike_i: int | Bike):
         if isinstance(bike_i, Bike): bike_i = self.bikes.index(bike_i)
         bike = self.bikes.pop(bike_i)
         bike.dock = None

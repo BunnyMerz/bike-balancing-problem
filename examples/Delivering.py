@@ -31,7 +31,7 @@ class ChooseEndStation:
                 for x in range(bk[i]):
                     bike = Bike(battery_level=bb[x])
                     bikes.append(bike)
-                    dock.retrieve(bike)
+                    dock.add_bike(bike)
                 i += 1
 
             Main.init_from_basic(docks, bikes, adj)

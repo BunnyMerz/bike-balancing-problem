@@ -35,7 +35,7 @@ class ChooseStartingStation:
                 for x in range(len(bb[i])):
                     bike = Bike(battery_level=bb[i][x])
                     bikes.append(bike)
-                    dock.retrieve(bike)
+                    dock.add_bike(bike)
                 i += 1
 
             Main.init_from_basic(docks, bikes, adj)
@@ -78,7 +78,7 @@ class ChooseStartingStation:
                 for x in range(len(bb[i])):
                     bike = Bike(battery_level=bb[i][x])
                     bikes.append(bike)
-                    dock.retrieve(bike)
+                    dock.add_bike(bike)
                 i += 1
 
             Main.init_from_basic(docks, bikes, adj)

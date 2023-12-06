@@ -82,6 +82,7 @@ class GraphLoader:
         self.docks: list[Dock] = []
         self.adj: list[list[bool]] = []
         self.dist: list[list[int]] = []
+        self.min_dist: list[list[int]] = []
 
         self.start_interests: list[StartInterest] = []
         self.end_interests: list[EndInterest] = []
@@ -161,7 +162,7 @@ class GraphLoader:
                     dock = Dock(_id, x, y, 0, k=capacity, charges=charges)
                     for _ in range(amount_now):
                         bike = Bike()
-                        dock.retrieve(bike)
+                        dock.add_bike(bike)
                         self.bikes.append(bike)
                     self.docks.append(dock)
 
@@ -171,11 +172,21 @@ class GraphLoader:
                     edges.append((source_id, target_id, w))
 
         adj = [[0 for _ in range(len(self.docks))][:] for _ in range(len(self.docks))]
-        min_dist = [[None for _ in range(len(self.docks))][:] for _ in range(len(self.docks))]
+        dist = [[None for _ in range(len(self.docks))][:] for _ in range(len(self.docks))]
         for egde in edges:
             source_id, target_id, w = egde
             adj[source_id][target_id] = 1
-            min_dist[source_id][target_id] = w
+            dist[source_id][target_id] = w
+
+        min_dist = []
+        with open(f"{self.graph_folder}/{self.folder_name}/{dists}", 'r') as __Dists__:
+            for line  in __Dists__:
+                line = line.strip(" ").strip("\n")
+                if line != "":
+                    line = line.split(",")
+                    line = list(map(int, line))
+                    min_dist.append(line)
 
         self.adj = adj
-        self.dist = min_dist
+        self.dist = dist
+        self.min_dist = min_dist
