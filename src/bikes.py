@@ -64,7 +64,7 @@ class Dock(Entity):
         return
     @classmethod
     def euclidian_distance(cls, dock_1: "Dock", dock_2: "Dock"):
-        return Dock.euclidian_distance_point(dock_1, dock_2.latitude, dock_2.longitude, dock_2.altitude)
+        return Dock.euclidian_distance_point(dock_1, dock_2.latitude, dock_2.longitude, dock_2.altitude) * 9 # TODO: wrong proportion. times 9 is just a quick hack to fix it
     @classmethod
     def euclidian_distance_point(cls, dock_1: "Dock",  latitude: float, longitude: float, altitude: float) -> float:
         x = dock_1.latitude - latitude

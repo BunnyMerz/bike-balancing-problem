@@ -143,6 +143,9 @@ class SimUser:
         x,y,z = self.current_location
         self.points.append((x+rng(-10, 10), y+rng(-10, 10), ['gray','purple','violet','pink','red'][self.angry], '.', 0.1))
     @classmethod
+    def custom_plot(cls, *args):
+        cls.points.append(args)
+    @classmethod
     def show(cls):
         for point in cls.points:
             Point(*point)

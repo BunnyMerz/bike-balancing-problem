@@ -99,6 +99,7 @@ class Main:
         for dock in cls.docks:
             long, lat = dock.longitude, dock.latitude
             w = dock.times_picked
+            if w == 0: continue
             values.append((long, lat, w))
         return values
 
@@ -127,7 +128,8 @@ class Main:
             x = 0
             while(x < t):
                 if cls.adj[y][x]:
-                    Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
+                    # Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
+                    Point.add_edge(points[x].id, points[y].id, int(Dock.euclidian_distance(cls.docks[x], cls.docks[y])))
                 x += 1
             y += 1
 
