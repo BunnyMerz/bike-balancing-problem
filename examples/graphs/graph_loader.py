@@ -11,6 +11,14 @@ class GraphLoader:
         self.dist: list[list[int]] = []
         self.load()
 
+    @classmethod
+    def int(cls, _v: str) -> int:
+        return int(_v.strip(' '))
+    @classmethod
+    def bool(cls, _v: str) -> bool:
+        return _v.strip(' ').lower() in ["true", "1", True]
+    
+
     def decode_node(self, args: list[str]) -> tuple[int, int, int, int, bool]:
         x, y, _id, *args = args
         capacity = 23
@@ -22,8 +30,7 @@ class GraphLoader:
             capacity, amount_now = args
         if len(args) == 3:
             capacity, amount_now, charges = args
-            charges = charges.lower() == "True"
-        return int(x), -int(y), int(_id), int(capacity), int(amount_now), charges
+        return self.int(x),-self.int(y), self.int(_id), self.int(capacity), self.int(amount_now), self.bool(charges)
 
     def load(self):
         graph = self.folder_name + '.graph'
@@ -32,7 +39,8 @@ class GraphLoader:
         edges: list[tuple[int, int, int]] = []
         with open(f"{self.graph_folder}/{self.folder_name}/{graph}", 'r') as __Graph__:
             for line in __Graph__.readlines():
-                line = line.strip('\n')
+                line = line.strip('\n').strip(" ")
+                if len(line) == 0 or line[0] == '#': continue
                 obj_type, *args = line.split(';')
                 if obj_type == "node":
                     x, y, _id, capacity, amount_now, charges = self.decode_node(args)

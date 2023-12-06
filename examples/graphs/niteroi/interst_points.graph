@@ -1,0 +1,5 @@
+# type(node|edge);...
+# node; x; y; id; capacity; bike_amount
+# edge; source; target; weight
+origin;7;
+destiny
