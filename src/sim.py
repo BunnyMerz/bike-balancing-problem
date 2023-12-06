@@ -6,13 +6,14 @@ from src.goals import Goal, PickBike
 from src.program import Main
 
 from utils.debug import Debug
+from utils.vis import Point
 _print = print
 print = Debug.labeld_print("Simulator")
 
 
 class Clock:
-    dist_to_time_walk = 10/10 # 10 seconds = 10 meters
-    dist_to_time_bike = 2/10  # 2  seconds = 10 meters
+    walking_speed = 70/60 # meters/seconds (70 meters per minute)
+    bike_speed = 250/60  # meters/seconds (250 meters per minute)
     def __init__(self) -> None:
         self.t = 0.0
 
@@ -25,11 +26,17 @@ class Clock:
             self.t = _o
 
     def add_time_taken_from_to_dock(self, dock1: Dock, dock2: Dock, has_bike: bool):
-        t = Dock.euclidian_distance(dock1, dock2) * [Clock.dist_to_time_walk, Clock.dist_to_time_bike][has_bike]
+        dist = Dock.euclidian_distance(dock1, dock2)
+        t = 1
+        if dist > 0:
+            t =  dist / [Clock.walking_speed, Clock.bike_speed][has_bike]
         self.delay(t)
     
     def add_time_taken_from_to_point(self, dock1: Dock, lat: float, long: float, alt: float, has_bike: bool):
-        t = Dock.euclidian_distance_point(dock1, lat, long, alt) * [Clock.dist_to_time_walk, Clock.dist_to_time_bike][has_bike]
+        dist = Dock.euclidian_distance_point(dock1, lat, long, alt)
+        t = 1
+        if dist > 0:
+            t = dist / [Clock.walking_speed, Clock.bike_speed][has_bike]
         self.delay(t)
 
 class SimulationResults:
@@ -37,6 +44,7 @@ class SimulationResults:
     total_suggestion_taken = 0
     total_suggestion_completed = 0
     angry_users = 0
+    gave_up = set()
 
     @classmethod
     def reset(cls):
@@ -96,13 +104,17 @@ class SimUser:
         self.system_exit_time: float = None
         self.distance_travelled_walk: float = 0
         self.distance_travelled_bike: float = 0
-        self.angry = 0
+        self._angry = 0
 
     def time_inside_system(self):
         if self.system_entry_time is not None and self.system_exit_time is not None:
             return self.system_exit_time - self.system_entry_time
         return 0
 
+    def __repr__(self) -> str:
+        base          = f"<User[t:{int(self.internal_clock.t)}][{self.state_names[self.state]}]({len(self.achieved_goals)}):"
+        end = '>'
+        return base + end
     def __str__(self) -> str:
         base          = f"<User[t:{int(self.internal_clock.t)}][{self.state_names[self.state]}]({len(self.achieved_goals)}):"
         pos           = f"{self.current_location} -> {self.dest}"
@@ -119,9 +131,21 @@ class SimUser:
         end = '>'
         return base + pos + current_dock + time + end
     
+    def plot(self):
+        x,y,z = self.current_location
+        Point(x+200+rng(0,30), y, ['gray','purple','violet','pink','red'][self.angry], '.', 0.1)
+
     def canceled_use(self):
         return self.system_entry_time is not None and self.system_exit_time is not None and self.system_entry_time - self.system_exit_time == 0
 
+    @property
+    def angry(self):
+        return self._angry
+    @angry.setter
+    def angry(self, _v: int):
+        self._angry = _v
+        if self.angry_enough(): self.plot()
+    
     def angry_enough(self):
         return self.angry > 3
 
@@ -332,8 +356,35 @@ def insert_by_time(user: SimUser, users: list[SimUser]):
 def run(users: list[SimUser]):
     copy_users = users[:]
     copy_users = order_by_time(copy_users)
+    x = 0
+    _print("===")
+    old_clock = 80000
+    u_angry = 0
     while(len(copy_users) > 0):
         user = copy_users.pop(0)
+        clock = user.internal_clock.t
         user.act()
         if not user.done():
             copy_users = insert_by_time(user, copy_users)
+        x += 1
+        # if u_angry < len(SimulationResults.gave_up):
+        #     u_angry = len(SimulationResults.gave_up)
+        #     old_clock = clock
+        #     u_waiting = len([x for x in users if x.state == x.Start])
+        #     u_working = len([x for x in users if x.state != x.Start])
+        #     u_done = len([x for x in users if x.done()])
+        #     u_total = len(users)
+        #     usr = [x for x in users if x.state != x.Start and not x.done()]
+        #     _usr = [x for x in users if x.state != x.Idle and x.done()]
+        #     Point.clear_points()
+        #     Main.plot()
+        #     _print("---")
+        #     # for u in usr:
+        #     #     if u.angry == 0:
+        #     #         u.plot()
+        #     for u in _usr:
+        #         u.plot()
+        #     _print("---")
+        #     _print(f"{u_waiting}| {u_working - u_done}/{u_done} |{u_angry}/{u_total}")
+        #     Main.show()
+    _print("===")

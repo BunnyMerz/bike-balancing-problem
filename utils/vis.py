@@ -74,7 +74,7 @@ def to_graph():
 
     # add axis
     _, ax = plt.subplots()
-    nx.draw(G, pos=pos, node_color=color_map, node_size=[1500*x.width for x in Point.points], ax=ax)  # draw nodes and edges
+    nx.draw(G, pos=pos, node_color=color_map, node_size=[150*x.width for x in Point.points], ax=ax)  # draw nodes and edges
     nx.draw_networkx_labels(G, pos=pos, labels=points_labels)  # draw node labels/names
     # draw edge weights
     labels = nx.get_edge_attributes(G, 'weight')
@@ -84,7 +84,22 @@ def to_graph():
     _x = [x for x,y in points]
     _y = [y for x,y in points]
 
-    ax.set_xlim(min(_x) - 20, max(_x) + 20)
-    ax.set_ylim(min(_y) - 20, max(_y) + 20)
+    _x, _X = min(_x) - 20, max(_x) + 20
+    _xw = _X - _x
+
+    _y, _Y = min(_y) - 20, max(_y) + 20
+    _yw = _Y - _y
+
+    if _xw > _yw:
+        width = _xw - _yw
+        _xw = 0
+        _yw = width/2
+    else:
+        width = _yw - _xw
+        _xw = width/2
+        _yw = 0
+
+    ax.set_xlim(_x - 20 - _xw, _X + 20 + _xw)
+    ax.set_ylim(_y - 20 - _yw, _Y + 20 + _yw)
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     plt.show()

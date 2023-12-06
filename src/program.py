@@ -68,7 +68,7 @@ class Main:
         max_radius = 145, number_of_suggestions = 1,
         max_occupancy = 80, occupancy_margin = 10,
         bike_low_batery = 20, bike_high_batery = 90,
-        max_extra_distance = [2, 900]
+        max_extra_distance = [2, 450]
     ):
         cls.docks =     docks
         cls.bikes =     bikes
@@ -87,8 +87,14 @@ class Main:
         cls.max_extra_distance = max_extra_distance
 
     @classmethod
+    def show(cls):
+        from utils.vis import to_graph
+        to_graph()
+
+    @classmethod
     def plot(cls):
-        from utils.vis import to_graph, Point
+        from utils.vis import Point
+        Point.clear_points()
         points: list[Point] = []
         for dock in cls.docks:
             label = (
@@ -100,7 +106,7 @@ class Main:
             label = str(len(dock.bikes))
             p = Point(
                 x=dock.latitude, y=dock.longitude,
-                color = ['red','orange'][dock.charges],
+                color = ['red','orange'][int(dock.charges)],
                 label = label
             )
             points.append(p)
@@ -114,7 +120,6 @@ class Main:
                     Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
                 x += 1
             y += 1
-        to_graph()
 
     ############
     ###### Strategies

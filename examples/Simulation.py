@@ -17,12 +17,17 @@ class Simulations:
     class BigGrid:
         @classmethod
         def create_users(cls):
+            docks = Main.docks
+            wd = len(docks)-1
             users: list[SimUser] = []
-            for x in range(1000):
+            for x in range(10000):
+                _s = docks[rng(0,wd)]
+                _f = docks[rng(0,wd)]
+                while(_f == _s): _f = docks[rng(0,wd)]
                 sim = SimUser(
-                    (rng(0,500), rng(0,500), 0),
-                    (rng(0,500), rng(0,500), 0),
-                    offset_timer= x*300
+                    (_s.latitude + rng(-100,100), _s.longitude + rng(-100,100), _s.latitude),
+                    (_f.latitude + rng(-100,100), _f.longitude + rng(-100,100), _f.latitude),
+                    offset_timer= x//30 * 500
                 )
                 users.append(sim)
             return users

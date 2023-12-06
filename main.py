@@ -1,3 +1,5 @@
+from examples.graphs.graph_loader import GraphLoader
+
 from examples.Picking import ChooseStartingStation
 from examples.Subroutes import ChooseSubStation
 from examples.Delivering import ChooseEndStation
@@ -20,6 +22,7 @@ class Results:
     def __init__(
             self, CantStart, CantPick, CantStartRun, CantDeliver, angry_users,
             total_suggestion_made, total_suggestion_taken, total_suggestion_completed,
+            total_trips, completed_trips,
             distance_travelled_walk, distance_travelled_bike, time_inside_system,
             dock_capacity, histogram
         ) -> None:
@@ -32,6 +35,9 @@ class Results:
         self.total_suggestion_made = total_suggestion_made
         self.total_suggestion_taken = total_suggestion_taken
         self.total_suggestion_completed = total_suggestion_completed
+
+        self.total_trips = total_trips
+        self.completed_trips = completed_trips
 
         self.distance_travelled_walk = distance_travelled_walk
         self.distance_travelled_bike = distance_travelled_bike
@@ -63,6 +69,9 @@ class Results:
             total_suggestion_taken = sum([r.total_suggestion_taken for r in results])/size,
             total_suggestion_completed = sum([r.total_suggestion_completed for r in results])/size,
 
+            total_trips=sum([r.total_trips for r in results])/size,
+            completed_trips=sum([r.completed_trips for r in results])/size,
+
             distance_travelled_walk = sum([r.distance_travelled_walk for r in results])/size,
             distance_travelled_bike = sum([r.distance_travelled_bike for r in results])/size,
             time_inside_system = sum([r.time_inside_system for r in results])/size,
@@ -83,6 +92,10 @@ class Results:
             Made:      {self.total_suggestion_made}
             Acepted:   {self.total_suggestion_taken}
             Completed: {self.total_suggestion_completed}""")
+        
+        print(f"""  Trips:
+            Total:     {self.total_trips}
+            Completed: {self.completed_trips}""")
 
         print(f"""  Averages:
             Distance walking:   {self.distance_travelled_walk}
@@ -112,7 +125,10 @@ class Results:
 
 def main():
     # print(f"Users have {SimUser.chance_to_follow_suggestion * 100}% chance to follow suggestion")
-    docks, bikes, adj = Simulations.BigGrid.build()
+    nikiti = GraphLoader('niteroi')
+    docks = nikiti.docks
+    Main.init(docks=nikiti.docks, bikes=nikiti.bikes, adj=nikiti.adj, distances=nikiti.dist)
+    Main.plot()
     users = Simulations.BigGrid.create_users()
 
     run_simulation(users)
@@ -121,7 +137,7 @@ def main():
         assert dock.interested_delivery == 0
         assert dock.interested_picking == 0
 
-    hist = [0 for _ in range(docks[0].capacity + 1)]
+    hist = [0 for _ in range(36)]
     for dock in docks:
         hist[dock.bike_count()] += 1
     r = Results(
@@ -135,6 +151,9 @@ def main():
         total_suggestion_taken = SimulationResults.total_suggestion_taken,
         total_suggestion_completed = SimulationResults.total_suggestion_completed,
 
+        total_trips=len(users),
+        completed_trips=len([x for x in users if x.state == x.Idle]),
+
         distance_travelled_walk = sum([x.distance_travelled_walk for x in users]),
         distance_travelled_bike = sum([x.distance_travelled_bike for x in users]),
         time_inside_system = sum([x.time_inside_system() for x in users]),
@@ -143,7 +162,7 @@ def main():
         histogram=hist
     )
 
-    Main.plot()
+    
     return r
 
 if __name__ == "__main__":
@@ -160,6 +179,7 @@ if __name__ == "__main__":
         for _ in range(repeat):
             results = main()
             try_round.append(results)
+            Main.show()
             SimulationResults.reset()
             Point.clear_points()
         print("Avg")
