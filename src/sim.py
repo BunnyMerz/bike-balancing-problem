@@ -348,11 +348,11 @@ class SimUser:
             self.current_dock = None
             self.state = SimUser.Done
         else:
-            # TODO: Fix this later, he should look for another dock to leave his Bike. Find_ending_dock should do the trick
             self.state = SimUser.FindEnd
             SimulationResults.angry_users += 1
             self.angry += 1
             if self.angry_enough():
+                self.current_dock.retrieve(self.current_bike) # TODO: currently adding more bikes than the dock accepts
                 self.state = self.CantDeliver
             
 
