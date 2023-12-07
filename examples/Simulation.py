@@ -22,10 +22,10 @@ class Simulations:
             docks = Main.docks
             wd = len(docks)-1
             users: list[SimUser] = []
-            for x in range(30):
-                timer = x//30 * 500
+            for x in range(8000):
+                timer = (x//30 * 500)
                 hours_timer = Clock.to_hours(timer)
-                if random() > 0.7:
+                if random() > 0.6:
                     _s = docks[rng(0,wd)]
                     _f = docks[rng(0,wd)]
                     while(_f == _s): _f = docks[rng(0,wd)]
@@ -40,9 +40,10 @@ class Simulations:
                     _f,
                     offset_timer = timer
                 )
-                SimUser.custom_plot(*_s[:2], 'green', ',', 0.1)
+                # SimUser.custom_plot(*_s[:2], 'green', ',', 0.1)
                 # SimUser.custom_plot(*_f[:2], 'blue', ',', 0.1)
                 users.append(sim)
+            print("Last timer:",timer)
             return users
         @classmethod
         def build(cls, k = 9):

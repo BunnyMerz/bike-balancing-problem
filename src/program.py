@@ -98,7 +98,7 @@ class Main:
         values = []
         for dock in cls.docks:
             long, lat = dock.longitude, dock.latitude
-            w = dock.times_picked
+            w = len(dock.bikes)
             if w == 0: continue
             values.append((long, lat, w))
         return values

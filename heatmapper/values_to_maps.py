@@ -2,6 +2,7 @@ from src.bikes import to_map
 from examples.graphs.graph_loader import GraphLoader
 from src.program import Main
 
+i = 0
 def save_to_file_maps(long_lats: list[tuple[float, float, float]]):
     lines = []
     for x,y,w in long_lats:
@@ -17,7 +18,7 @@ def save_to_file_maps(long_lats: list[tuple[float, float, float]]):
         <title>Heatmaps</title>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
-        <link rel="stylesheet" type="text/css" href="style.css" />
+        <link rel="stylesheet" type="text/css" href="../style.css" />
         <!-- <script type="module" src="index.js"></script> -->
     </head>
     <body>
@@ -115,5 +116,7 @@ def save_to_file_maps(long_lats: list[tuple[float, float, float]]):
     </script>
     </html>
     '''
-    with open('heatmapper/index.html', 'w') as _f:
+    global i
+    i += 1
+    with open(f'heatmapper/saved/bike_count{i}.html', 'w') as _f:
         _f.write(_file)

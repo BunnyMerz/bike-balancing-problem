@@ -14,12 +14,22 @@ from src.program import Main
 from utils.vis import Point
 
 from random import randint as rng, seed, random
+from numpy import array as np_array, mean as np_mean
+from scipy.stats import sem, t
+
 
 from utils.debug import Debug
 log_print = lambda *a, **b: None
 # log_print = print
 # print = Debug.print
 # seed(1923812938914922304923729987698877576)
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0 * np_array(data)
+    n = len(a)
+    mean, se = np_mean(a), sem(a)
+    error = se * t.ppf((1 + confidence) / 2., n-1)
+    return round(mean, 4), round(error, 4)
 
 class Results:
     def __init__(
@@ -55,31 +65,35 @@ class Results:
         def avg_hist(histograms: list[list[int]]):
             size = len(histograms)
             w = len(histograms[0])
-            r = [0 for _ in range(w)]
-            for h in histograms:
-                for c in range(w):
-                    r[c] += h[c]
-            r = [round(v/size, 2) for v in r]
-            return r
-        return Results(
-            CantStart= sum([r.CantStart for r in results])/size,
-            CantPick= sum([r.CantPick for r in results])/size,
-            CantStartRun= sum([r.CantStartRun for r in results])/size,
-            CantDeliver= sum([r.CantDeliver for r in results])/size,
+            medias = [0 for _ in range(w)]
+            erros = [0 for _ in range(w)]
+            for c in range(w):
+                values = []
+                for h in histograms:
+                    values.append(h[c])
+                mean, error = mean_confidence_interval(values)
+                medias[c] = mean
+                erros[c] = error
+            return medias, erros
+        return MeanResults(
+            CantStart= mean_confidence_interval([r.CantStart for r in results]),
+            CantPick= mean_confidence_interval([r.CantPick for r in results]),
+            CantStartRun= mean_confidence_interval([r.CantStartRun for r in results]),
+            CantDeliver= mean_confidence_interval([r.CantDeliver for r in results]),
 
-            angry_users = sum([r.angry_users for r in results])/size,
-            total_suggestion_made = sum([r.total_suggestion_made for r in results])/size,
-            total_suggestion_taken = sum([r.total_suggestion_taken for r in results])/size,
-            total_suggestion_completed = sum([r.total_suggestion_completed for r in results])/size,
+            angry_users = mean_confidence_interval([r.angry_users for r in results]),
+            total_suggestion_made = mean_confidence_interval([r.total_suggestion_made for r in results]),
+            total_suggestion_taken = mean_confidence_interval([r.total_suggestion_taken for r in results]),
+            total_suggestion_completed = mean_confidence_interval([r.total_suggestion_completed for r in results]),
 
-            total_trips=sum([r.total_trips for r in results])/size,
-            completed_trips=sum([r.completed_trips for r in results])/size,
+            total_trips=mean_confidence_interval([r.total_trips for r in results]),
+            completed_trips=mean_confidence_interval([r.completed_trips for r in results]),
 
-            distance_travelled_walk = sum([r.distance_travelled_walk for r in results])/size,
-            distance_travelled_bike = sum([r.distance_travelled_bike for r in results])/size,
-            time_inside_system = sum([r.time_inside_system for r in results])/size,
+            distance_travelled_walk = mean_confidence_interval([r.distance_travelled_walk for r in results]),
+            distance_travelled_bike = mean_confidence_interval([r.distance_travelled_bike for r in results]),
+            time_inside_system = mean_confidence_interval([r.time_inside_system for r in results]),
 
-            dock_capacity = sum([r.dock_capacity for r in results])/size,
+            dock_capacity = mean_confidence_interval([r.dock_capacity for r in results]),
             histogram = avg_hist([r.histogram for r in results]),
         )
 
@@ -125,6 +139,8 @@ class Results:
     #     ])
     #     log_print(hist)
 
+class MeanResults(Results):
+    pass
 
 def main():
     # print(f"Users have {SimUser.chance_to_follow_suggestion * 100}% chance to follow suggestion")
@@ -136,7 +152,6 @@ def main():
     users = Simulations.BigGrid.create_users(s_intes, e_intes)
 
     run_simulation(users)
-    save_to_file_maps(Main.to_map())
     Main.plot()
     SimUser.show()
     SimUser.reset_points()
@@ -174,9 +189,10 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 1
+    repeat = 10
     global_seed = random()
-    for x in [0, 0.5, 0.8, 1]:
+    global_seed = 0.4294814496825895
+    for x in [0, 0.1, 0.3, 0.5, 0.8]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)
@@ -185,11 +201,13 @@ if __name__ == "__main__":
         try_round = []
         seed(global_seed)
         for _ in range(repeat):
-            results = main()
-            try_round.append(results)
-            Main.show()
             SimulationResults.reset()
             Point.clear_points()
+            results = main()
+            try_round.append(results)
+        # Main.show()
+        # input("Next? Press enter...")
+        save_to_file_maps(Main.to_map())
         print("Avg")
         avg_r = Results.average(try_round)
         avg_r.print()

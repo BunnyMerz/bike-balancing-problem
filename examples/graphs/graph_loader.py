@@ -90,6 +90,7 @@ class GraphLoader:
         self.load()
 
         barcas = find_dock(19, self.docks)
+        ponto_final = find_dock(20, self.docks)
         casa_icarai = find_dock(37, self.docks)
         casa_centro = centro = find_dock(16, self.docks)
         pv = find_dock(32, self.docks)
@@ -97,32 +98,36 @@ class GraphLoader:
 
         end_manha = [
             # Manhã
-            EndInterest((20, 10), (30,35), *centro.geo_position(), [(7, 13)]), # Centro (Rua principal): 16
-            EndInterest((20, 2), (10,10), *pv.geo_position(), [(7, 11),]), # PV (Faculdade): 32
-            EndInterest((20, 6), (10,10), *grag.geo_position(), [(7, 13)]), # Gragoatá (Faculdade): 24
+            EndInterest((20, 10), (30,35),*centro.geo_position(),        [(7, 13)]), # Centro (Rua principal): 16
+            EndInterest((20, 2), (10,10), *pv.geo_position(),            [(7, 11)]), # PV (Faculdade): 32
+            EndInterest((20, 6), (10,10), *grag.geo_position(),          [(7, 13)]), # Gragoatá (Faculdade): 24
+            EndInterest((30, 3), (10,10), *barcas.geo_position(),        [(7, 12)]), # Barcas: 19
+            EndInterest((30, 3), (10,10), *ponto_final.geo_position(),   [(7, 12)]), # Barcas: 19
         ]
         start_manha = [
             # Manhã
-            StartInterest((30, 3), (10,10), *barcas.geo_position(),      [(7, 11), (18,21)], end_manha, 0.3), # Barcas: 19
+            StartInterest((30, 3), (10,10), *barcas.geo_position(),      [(7, 11)],          end_manha, 0.3), # Barcas: 19
+            StartInterest((30, 3), (10,10), *ponto_final.geo_position(), [(7, 11)],          end_manha, 0.3), # Barcas: 19
             StartInterest((15, 1), (30,40), *casa_icarai.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Icarai): 37
             StartInterest((5, 1),  (10,10), *casa_centro.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Centro): 16
         ]
 
-        # end_noite = [
-        #     # Noite
-        #     EndInterest((30, 3)), # Barcas: 19
-        #     EndInterest((30, 3)), # Casa (Icarai): 37
-        #     EndInterest((30, 3)), # Casa (Centro): 16
-        # ]
-        # start_noite = [
-        #     # Noite
-        #     StartInterest((10, 1)), # Centro (Rua principal): 16
-        #     StartInterest((10, 1)), # PV (Faculdade): 32
-        #     StartInterest((10, 1)), # Gragoatá (Faculdade): 24
-        # ]
+        end_noite = [
+            # Noite
+            EndInterest((20, 3), (10,10), *barcas.geo_position(),      [(17, 22)]), # Barcas: 19
+            EndInterest((15, 1), (30,40), *casa_icarai.geo_position(), [(17, 21)]), # Casa (Icarai): 37
+            EndInterest((5, 1),  (10,10), *casa_centro.geo_position(), [(17, 22)]), # Casa (Centro): 16
+        ]
+        start_noite = [
+            # Noite
+            StartInterest((30, 3), (10,10), *barcas.geo_position(),      [(17, 21)],          end_noite, 0.3), # Barcas: 19
+            StartInterest((20, 1),  (10,10),*casa_centro.geo_position(), [(17, 20)],          end_noite, 0.5), # Casa (Centro): 16
+            StartInterest((15, 2), (10,10), *pv.geo_position(),          [(17, 21)],          end_noite, 0.2), # PV (Faculdade): 32
+            StartInterest((15, 6), (10,10), *grag.geo_position(),        [(17, 21)],          end_noite, 0.2), # Gragoatá (Faculdade): 24
+        ]
 
-        self.start_interests = start_manha # + start_noite
-        self.end_interests = end_manha # + end_noite
+        self.start_interests = start_manha + start_noite
+        self.end_interests = end_manha + end_noite
 
     @classmethod
     def int(cls, _v: str) -> int:

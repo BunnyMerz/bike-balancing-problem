@@ -162,7 +162,7 @@ class SimUser:
     @angry.setter
     def angry(self, _v: int):
         self._angry = _v
-        if self.angry_enough(): self.plot()
+        # if self.angry_enough(): self.plot()
     
     def angry_enough(self):
         return self.angry > 2
@@ -378,7 +378,6 @@ def run(users: list[SimUser]):
     copy_users = users[:]
     copy_users = order_by_time(copy_users)
     x = 0
-    _print("===")
     old_clock = 80000
     u_angry = 0
     while(len(copy_users) > 0):
@@ -408,4 +407,3 @@ def run(users: list[SimUser]):
         #     _print("---")
         #     _print(f"{u_waiting}| {u_working - u_done}/{u_done} |{u_angry}/{u_total}")
         #     Main.show()
-    _print("===")
