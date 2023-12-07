@@ -13,6 +13,8 @@ class Main:
     Capable of deciding what streategies are best and will seng fragments of them.
     The User interace must handle users performing or not these fragements and concatenate them as needed.
     """
+    later_to_map: list[tuple[float, float, float]] = []
+
     docks:     list[Dock]        = None
     bikes:     list[Bike]        = None
     adj:       list[list[bool]]  = None
@@ -98,10 +100,10 @@ class Main:
         values = []
         for dock in cls.docks:
             long, lat = dock.longitude, dock.latitude
-            w = len(dock.bikes)
+            w = dock.times_picked
             if w == 0: continue
             values.append((long, lat, w))
-        return values
+        return values + cls.later_to_map
 
     @classmethod
     def plot(cls):

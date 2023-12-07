@@ -118,5 +118,5 @@ def save_to_file_maps(long_lats: list[tuple[float, float, float]]):
     '''
     global i
     i += 1
-    with open(f'heatmapper/saved/bike_count{i}.html', 'w') as _f:
+    with open(f'heatmapper/saved/start{i}.html', 'w') as _f:
         _f.write(_file)

@@ -192,7 +192,7 @@ if __name__ == "__main__":
     repeat = 10
     global_seed = random()
     global_seed = 0.4294814496825895
-    for x in [0, 0.1, 0.3, 0.5, 0.8]:
+    for x in [1]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)

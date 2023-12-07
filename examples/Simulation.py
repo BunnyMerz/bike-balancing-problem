@@ -3,7 +3,7 @@ from random import randint as rng, random
 from examples.graphs.graph_loader import EndInterest, StartInterest
 
 from src.sim import SimUser, Clock
-from src.bikes import Dock, Bike
+from src.bikes import Dock, Bike, to_map
 from src.program import Main
 
 from utils.debug import Debug
@@ -40,6 +40,12 @@ class Simulations:
                     _f,
                     offset_timer = timer
                 )
+                # Main.later_to_map.append(
+                #     (*_s[:2], 1)
+                # )
+                # Main.later_to_map.append(
+                #     (*_f[:2], 1)
+                # )
                 # SimUser.custom_plot(*_s[:2], 'green', ',', 0.1)
                 # SimUser.custom_plot(*_f[:2], 'blue', ',', 0.1)
                 users.append(sim)
