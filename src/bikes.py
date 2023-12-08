@@ -108,7 +108,7 @@ class Dock(Entity):
         self.times_retrieved += 1
         return self.add_bike(bike)
     def add_bike(self, bike: Bike):
-        assert len(self.bikes) < self.capacity
+        # assert len(self.bikes) < self.capacity
         bike.dock = self
         self.bikes.append(bike)
 

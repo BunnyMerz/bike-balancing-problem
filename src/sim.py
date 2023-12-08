@@ -40,10 +40,13 @@ class Clock:
         self.delay(t)
 
     @classmethod
-    def to_hours(self, _v: float):
+    def to_hours(cls, _v: float):
         h = _v / (60 * 24)
         while h > 24: h -= 24
         return h
+    @classmethod
+    def from_hours(cls, _v: float):
+        return _v * 60 * 24
 
 class SimulationResults:
     total_suggestion_made = 0
@@ -169,6 +172,8 @@ class SimUser:
 
     def done(self):
         return self.state < 0
+    def gave_up(self):
+        return self.state < -1
 
     def follow_suggestion(self, natural: Dock, suggestion: Goal):
         return random() < self.chance_to_follow_suggestion
