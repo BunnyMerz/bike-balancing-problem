@@ -178,6 +178,9 @@ def main():
         completed_trips=len([x for x in users if x.state == x.Idle]),
 
         distance_travelled_walk = sum([x.distance_travelled_walk for x in users]),
+        distance_travelled_walk_success = sum([x.distance_travelled_walk for x in users if not x.gave_up()]),
+        distance_travelled_walk_uncesss = sum([x.distance_travelled_walk for x in users if x.gave_up()]),
+
         distance_travelled_bike = sum([x.distance_travelled_bike for x in users]),
         time_inside_system = sum([x.time_inside_system() for x in users]),
 
