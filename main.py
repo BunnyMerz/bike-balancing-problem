@@ -161,6 +161,8 @@ def main():
     users = Simulations.BigGrid.create_users(s_intes, e_intes)
 
     run_simulation(users)
+    Main.show()
+    raise Exception()
     SimUser.reset_points()
 
     for dock in docks:

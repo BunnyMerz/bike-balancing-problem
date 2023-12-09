@@ -23,7 +23,7 @@ class Simulations:
             wd = len(docks)-1
             users: list[SimUser] = []
 
-            user_amount = 8000
+            user_amount = 80
             start_time = Clock.from_hours(6) # 6am
             end_time = Clock.from_hours(23) # 6am
 
@@ -56,8 +56,8 @@ class Simulations:
                 # Main.later_to_map.append(
                 #     (*_f[:2], 1)
                 # )
-                # SimUser.custom_plot(*_s[:2], 'green', ',', 0.1)
-                # SimUser.custom_plot(*_f[:2], 'blue', ',', 0.1)
+                SimUser.custom_plot(*_s[:2], 'green', ',', 0.1)
+                SimUser.custom_plot(*_f[:2], 'blue', ',', 0.1)
                 users.append(sim)
             return users
         @classmethod
