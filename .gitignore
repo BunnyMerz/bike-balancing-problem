@@ -1,5 +1,6 @@
 __pycache__/
 *.out
-*venv
-*venv/*
-heatmapped/saved/*
+*.venv/
+*.venv/*
+heatmapper/saved/
+heatmapper/saved/*
