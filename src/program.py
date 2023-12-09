@@ -133,7 +133,7 @@ class Main:
                 if cls.adj[y][x]:
                     # Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
                     dis = int(Dock.euclidian_distance(cls.docks[x], cls.docks[y]))
-                    Point.add_edge(points[x].id, points[y].id, str(dis)+'m')
+                    Point.add_edge(points[x].id, points[y].id, '')
                 x += 1
             y += 1
 
