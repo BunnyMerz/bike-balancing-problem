@@ -32,7 +32,7 @@ class Simulations:
             group_amount = user_amount/group_size
             step = time_spam/group_amount
 
-            for x in range(0, user_amount, group_size*2):
+            for x in range(user_amount, user_amount//2, group_size*2):
                 timer = (x//group_size * step) + start_time # Start at 6am
                 hours_timer = Clock.to_hours(timer)
                 if random() > 0.6:

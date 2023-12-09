@@ -108,15 +108,15 @@ class GraphLoader:
             # Manhã
             StartInterest((30, 3), (10,10), *barcas.geo_position(),      [(7, 11)],          end_manha, 0.3), # Barcas: 19
             StartInterest((30, 3), (10,10), *ponto_final.geo_position(), [(7, 11)],          end_manha, 0.3), # Barcas: 19
-            StartInterest((15, 1), (30,40), *casa_icarai.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Icarai): 37
-            StartInterest((5, 1),  (10,10), *casa_centro.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Centro): 16
+            StartInterest((30, 1), (30,40), *casa_icarai.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Icarai): 37
+            StartInterest((20, 1), (10,10), *casa_centro.geo_position(), [(7, 11)],          end_manha, 0.5), # Casa (Centro): 16
         ]
 
         end_noite = [
             # Noite
             EndInterest((20, 3), (10,10), *barcas.geo_position(),      [(17, 22)]), # Barcas: 19
-            EndInterest((15, 1), (30,40), *casa_icarai.geo_position(), [(17, 21)]), # Casa (Icarai): 37
-            EndInterest((5, 1),  (10,10), *casa_centro.geo_position(), [(17, 22)]), # Casa (Centro): 16
+            EndInterest((20, 1), (30,40), *casa_icarai.geo_position(), [(17, 21)]), # Casa (Icarai): 37
+            EndInterest((10, 1),  (10,10), *casa_centro.geo_position(), [(17, 22)]), # Casa (Centro): 16
         ]
         start_noite = [
             # Noite
