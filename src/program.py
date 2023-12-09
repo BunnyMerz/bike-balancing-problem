@@ -45,7 +45,7 @@ class Main:
     @classmethod
     def init_from_basic(
         cls, docks, bikes, adj,
-        max_radius = 145, number_of_suggestions = 1,
+        max_radius = 300, number_of_suggestions = 1,
         max_occupancy = 80, occupancy_margin = 10,
         bike_low_batery = 20, bike_high_batery = 90,
         max_extra_distance = [1.2, 90]
@@ -69,7 +69,7 @@ class Main:
     @classmethod
     def init(
         cls, docks, bikes, adj, distances,
-        max_radius = 145, number_of_suggestions = 1,
+        max_radius = 300, number_of_suggestions = 1,
         max_occupancy = 80, occupancy_margin = 10,
         bike_low_batery = 20, bike_high_batery = 90,
         max_extra_distance = [2, 450]

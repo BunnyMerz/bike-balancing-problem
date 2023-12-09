@@ -156,11 +156,11 @@ def main():
     s_intes = nikiti.start_interests
     e_intes = nikiti.end_interests
     Main.init(docks=nikiti.docks, bikes=nikiti.bikes, adj=nikiti.adj, distances=nikiti.dist)
+    Main.plot()
+    SimUser.show()
     users = Simulations.BigGrid.create_users(s_intes, e_intes)
 
     run_simulation(users)
-    Main.plot()
-    SimUser.show()
     SimUser.reset_points()
 
     for dock in docks:
@@ -215,7 +215,7 @@ if __name__ == "__main__":
             Point.clear_points()
             results = main()
             try_round.append(results)
-        # Main.show()
+        Main.show()
         # input("Next? Press enter...")
         save_to_file_maps(Main.to_map())
         print("Avg")
