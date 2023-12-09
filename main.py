@@ -36,7 +36,8 @@ class Results:
             self, CantStart, CantPick, CantStartRun, CantDeliver, angry_users,
             total_suggestion_made, total_suggestion_taken, total_suggestion_completed,
             total_trips, completed_trips,
-            distance_travelled_walk, distance_travelled_bike, time_inside_system,
+            distance_travelled_walk, distance_travelled_walk_success, distance_travelled_walk_failed,
+            distance_travelled_bike, time_inside_system,
             dock_capacity, histogram
         ) -> None:
         self.CantStart= CantStart
@@ -58,6 +59,9 @@ class Results:
 
         self.dock_capacity = dock_capacity
         self.histogram = histogram
+
+        self.distance_travelled_walk_success = distance_travelled_walk_success
+        self.distance_travelled_walk_failed = distance_travelled_walk_failed
 
     @classmethod
     def average(cls, results: list["Results"]):
@@ -90,6 +94,9 @@ class Results:
             completed_trips=mean_confidence_interval([r.completed_trips for r in results]),
 
             distance_travelled_walk = mean_confidence_interval([r.distance_travelled_walk for r in results]),
+            distance_travelled_walk_success = mean_confidence_interval([r.distance_travelled_walk_success for r in results]),
+            distance_travelled_walk_failed = mean_confidence_interval([r.distance_travelled_walk_failed for r in results]),
+            
             distance_travelled_bike = mean_confidence_interval([r.distance_travelled_bike for r in results]),
             time_inside_system = mean_confidence_interval([r.time_inside_system for r in results]),
 
@@ -179,7 +186,7 @@ def main():
 
         distance_travelled_walk = sum([x.distance_travelled_walk for x in users]),
         distance_travelled_walk_success = sum([x.distance_travelled_walk for x in users if not x.gave_up()]),
-        distance_travelled_walk_uncesss = sum([x.distance_travelled_walk for x in users if x.gave_up()]),
+        distance_travelled_walk_failed = sum([x.distance_travelled_walk for x in users if x.gave_up()]),
 
         distance_travelled_bike = sum([x.distance_travelled_bike for x in users]),
         time_inside_system = sum([x.time_inside_system() for x in users]),
@@ -192,10 +199,10 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 10
+    repeat = 1
     global_seed = random()
     global_seed = 0.4294814496825895
-    for x in [0, 0.1, 0.3, 0.5, 0.8]:
+    for x in [0, 0.1, 0.5, 0.8]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)

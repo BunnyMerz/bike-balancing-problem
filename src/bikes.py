@@ -73,19 +73,13 @@ class Dock(Entity):
         return (x*x + y*y + z*z)**(1/2)
     
 
-    def show_deliver_interest(self):
-        self.interested_delivery += 1
-    def lose_deliver_interest(self):
-        self.interested_delivery -= 1
-    def done_with_deliver_interest(self):
-        self.interested_delivery -= 1
+    def show_deliver_interest(self):      self.interested_delivery += 1
+    def lose_deliver_interest(self):      self.interested_delivery -= 1
+    def done_with_deliver_interest(self): self.interested_delivery -= 1
 
-    def show_picking_interest(self):
-        self.interested_picking += 1
-    def lose_picking_interest(self):
-        self.interested_picking -= 1
-    def done_with_picking_interest(self):
-        self.interested_picking -= 1
+    def show_picking_interest(self):      self.interested_picking += 1
+    def lose_picking_interest(self):      self.interested_picking -= 1
+    def done_with_picking_interest(self): self.interested_picking -= 1
 
     def bike_count(self, bias: int = NeitherBias, ttt=False):
         bike_amount = len(self.bikes)
@@ -98,17 +92,15 @@ class Dock(Entity):
         prediction = bike_amount - self.interested_picking + self.interested_delivery
         return min(max(prediction, 0), self.capacity)
 
-    def occupancy(self, bias: int = NeitherBias):
-        return self.bike_count(bias)/self.capacity * 100
-    def full  (self, bias: int = NeitherBias): return self.bike_count(bias) >= self.capacity
-    def empty (self, bias: int = NeitherBias): return self.bike_count(bias) == 0
-    def coords(self): return (self.latitude, self.longitude, self.altitude)
+    def occupancy(self, bias: int = NeitherBias):   return self.bike_count(bias)/self.capacity * 100
+    def full     (self, bias: int = NeitherBias):   return self.bike_count(bias) >= self.capacity
+    def empty    (self, bias: int = NeitherBias):   return self.bike_count(bias) == 0
+    def coords   (self):                            return (self.latitude, self.longitude, self.altitude)
 
     def retrieve(self, bike: Bike):
         self.times_retrieved += 1
         return self.add_bike(bike)
     def add_bike(self, bike: Bike):
-        # assert len(self.bikes) < self.capacity
         bike.dock = self
         self.bikes.append(bike)
 
