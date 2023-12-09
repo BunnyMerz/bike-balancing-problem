@@ -157,8 +157,8 @@ def main():
     e_intes = nikiti.end_interests
     Main.init(docks=nikiti.docks, bikes=nikiti.bikes, adj=nikiti.adj, distances=nikiti.dist)
     Main.plot()
-    SimUser.show()
     users = Simulations.BigGrid.create_users(s_intes, e_intes)
+    SimUser.show()
 
     run_simulation(users)
     Main.show()
