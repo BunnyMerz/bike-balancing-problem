@@ -23,7 +23,7 @@ class Simulations:
             wd = len(docks)-1
             users: list[SimUser] = []
 
-            user_amount = 80
+            user_amount = 8000
             start_time = Clock.from_hours(6) # 6am
             end_time = Clock.from_hours(23) # 6am
 
@@ -32,7 +32,7 @@ class Simulations:
             group_amount = user_amount/group_size
             step = time_spam/group_amount
 
-            for x in range(user_amount):
+            for x in range(0, user_amount, group_size*2):
                 timer = (x//group_size * step) + start_time # Start at 6am
                 hours_timer = Clock.to_hours(timer)
                 if random() > 0.6:
