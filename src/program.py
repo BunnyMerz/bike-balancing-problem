@@ -132,8 +132,8 @@ class Main:
             while(x < t):
                 if cls.adj[y][x]:
                     # Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
-                    dis = int(Dock.euclidian_distance(cls.docks[x], cls.docks[y]))/1000
-                    Point.add_edge(points[x].id, points[y].id, str(dis)+'km')
+                    dis = int(Dock.euclidian_distance(cls.docks[x], cls.docks[y]))
+                    Point.add_edge(points[x].id, points[y].id, str(dis)+'m')
                 x += 1
             y += 1
 
