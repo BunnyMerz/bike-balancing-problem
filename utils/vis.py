@@ -101,7 +101,7 @@ def to_graph():
 
     ax.set_xlim(_x - 20 - _xw, _X + 20 + _xw)
     ax.set_ylim(_y - 20 - _yw, _Y + 20 + _yw)
-    ax.set_xlim(0, 700)
+    ax.set_xlim(0 - 350, 700 + 350)
     ax.set_ylim(-700, 0)
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     plt.show()
