@@ -115,6 +115,7 @@ class Main:
                     +"\n"+
                     f"{len(dock.bikes)}/{dock.capacity}"
                 )
+            label = ""
             
             label = str(len(dock.bikes))
             p = Point(
@@ -131,7 +132,8 @@ class Main:
             while(x < t):
                 if cls.adj[y][x]:
                     # Point.add_edge(points[x].id, points[y].id, int(cls.distances[y][x]))
-                    Point.add_edge(points[x].id, points[y].id, int(Dock.euclidian_distance(cls.docks[x], cls.docks[y])))
+                    dis = int(Dock.euclidian_distance(cls.docks[x], cls.docks[y]))/1000
+                    Point.add_edge(points[x].id, points[y].id, str(dis)+'km')
                 x += 1
             y += 1
 
