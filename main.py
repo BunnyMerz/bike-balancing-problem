@@ -37,7 +37,8 @@ class Results:
             total_suggestion_made, total_suggestion_taken, total_suggestion_completed,
             total_trips, completed_trips,
             distance_travelled_walk, distance_travelled_walk_success, distance_travelled_walk_failed,
-            distance_travelled_bike, time_inside_system,
+            distance_travelled_bike, distance_travelled_bike_success, distance_travelled_bike_failed,
+            time_inside_system,
             dock_capacity, histogram
         ) -> None:
         self.CantStart= CantStart
@@ -54,14 +55,23 @@ class Results:
         self.completed_trips = completed_trips
 
         self.distance_travelled_walk = distance_travelled_walk
+        self.distance_travelled_walk_success = distance_travelled_walk_success
+        self.distance_travelled_walk_failed = distance_travelled_walk_failed
+
         self.distance_travelled_bike = distance_travelled_bike
+        self.distance_travelled_bike_success = distance_travelled_bike_success
+        self.distance_travelled_bike_failed = distance_travelled_bike_failed
+        
         self.time_inside_system = time_inside_system
 
         self.dock_capacity = dock_capacity
         self.histogram = histogram
 
-        self.distance_travelled_walk_success = distance_travelled_walk_success
-        self.distance_travelled_walk_failed = distance_travelled_walk_failed
+
+    @classmethod
+    def avg_users(cls, users: list[SimUser], get_attr):
+        if len(users) == 0: return 0
+        return sum([get_attr(x) for x in users])/len(users)
 
     @classmethod
     def average(cls, results: list["Results"]):
@@ -98,6 +108,9 @@ class Results:
             distance_travelled_walk_failed = mean_confidence_interval([r.distance_travelled_walk_failed for r in results]),
             
             distance_travelled_bike = mean_confidence_interval([r.distance_travelled_bike for r in results]),
+            distance_travelled_bike_success = mean_confidence_interval([r.distance_travelled_bike_success for r in results]),
+            distance_travelled_bike_failed = mean_confidence_interval([r.distance_travelled_bike_failed for r in results]),
+
             time_inside_system = mean_confidence_interval([r.time_inside_system for r in results]),
 
             dock_capacity = mean_confidence_interval([r.dock_capacity for r in results]),
@@ -122,8 +135,14 @@ class Results:
             Completed: {self.completed_trips}""")
 
         print(f"""  Averages:
-            Distance walking:   {self.distance_travelled_walk}
-            Distance cycling:   {self.distance_travelled_bike}
+            Distance walking total:   {self.distance_travelled_walk}
+            Distance walking succe:   {self.distance_travelled_walk_success}
+            Distance walking fail:    {self.distance_travelled_walk_failed}
+
+            Distance cycling total:   {self.distance_travelled_bike}
+            Distance cycling succe:   {self.distance_travelled_bike_success}
+            Distance cycling fail:   {self.distance_travelled_bike_failed}
+
             Time inside system: {self.time_inside_system}""")
         print(f"Bike amount histogram 0..{self.dock_capacity}:", self.histogram)
     # def log_print(self):
@@ -169,7 +188,9 @@ def main():
 
     hist = [0 for _ in range(36)]
     for dock in docks:
-        hist[dock.bike_count()] += 1
+        hist[min(35, dock.bike_count())] += 1
+
+    
     r = Results(
         CantStart =    len([x for x in users if x.state == x.CantStart]),
         CantPick =     len([x for x in users if x.state == x.CantPick]),
@@ -184,11 +205,14 @@ def main():
         total_trips=len(users),
         completed_trips=len([x for x in users if x.state == x.Idle]),
 
-        distance_travelled_walk = sum([x.distance_travelled_walk for x in users]),
-        distance_travelled_walk_success = sum([x.distance_travelled_walk for x in users if not x.gave_up()]),
-        distance_travelled_walk_failed = sum([x.distance_travelled_walk for x in users if x.gave_up()]),
+        distance_travelled_walk =         Results.avg_users([user for user in users                                      ], lambda x: x.distance_travelled_walk),
+        distance_travelled_walk_success = Results.avg_users([user for user in users if not user.gave_up() and user.done()], lambda x: x.distance_travelled_walk),
+        distance_travelled_walk_failed =  Results.avg_users([user for user in users if     user.gave_up()                ], lambda x: x.distance_travelled_walk),
 
-        distance_travelled_bike = sum([x.distance_travelled_bike for x in users]),
+        distance_travelled_bike         =  Results.avg_users([user for user in users                                      ], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_success =  Results.avg_users([user for user in users if not user.gave_up() and user.done()], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_failed  =  Results.avg_users([user for user in users if     user.gave_up()                ], lambda x: x.distance_travelled_bike),
+
         time_inside_system = sum([x.time_inside_system() for x in users]),
 
         dock_capacity= max(dock.capacity for dock in docks),
@@ -199,10 +223,10 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 1
+    repeat = 2
     global_seed = random()
     global_seed = 0.4294814496825895
-    for x in [0, 0.1, 0.5, 0.8]:
+    for x in [1.0]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)
