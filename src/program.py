@@ -100,7 +100,7 @@ class Main:
         values = []
         for dock in cls.docks:
             long, lat = dock.longitude, dock.latitude
-            w = dock.times_picked
+            w = dock.bike_count()
             if w == 0: continue
             values.append((long, lat, w))
         return values + cls.later_to_map

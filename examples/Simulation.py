@@ -35,7 +35,7 @@ class Simulations:
             for x in range(user_amount):
                 timer = (x//group_size * step) + start_time # Start at 6am
                 hours_timer = Clock.to_hours(timer)
-                if random() > 0.6:
+                if random() > 1:
                     _s = docks[rng(0,wd)]
                     _f = docks[rng(0,wd)]
                     while(_f == _s): _f = docks[rng(0,wd)]

@@ -205,13 +205,13 @@ def main():
         total_trips=len(users),
         completed_trips=len([x for x in users if x.state == x.Idle]),
 
-        distance_travelled_walk =         Results.avg_users([user for user in users                                      ], lambda x: x.distance_travelled_walk),
-        distance_travelled_walk_success = Results.avg_users([user for user in users if not user.gave_up() and user.done()], lambda x: x.distance_travelled_walk),
-        distance_travelled_walk_failed =  Results.avg_users([user for user in users if     user.gave_up()                ], lambda x: x.distance_travelled_walk),
+        distance_travelled_walk =         Results.avg_users([user for user in users                                                    ], lambda x: x.distance_travelled_walk),
+        distance_travelled_walk_success = Results.avg_users([user for user in users if len(user.achieved_goals) > 0                    ], lambda x: x.distance_travelled_walk),
+        distance_travelled_walk_failed =  Results.avg_users([user for user in users if user.angry > 0 and len(user.achieved_goals) == 0], lambda x: x.distance_travelled_walk),
 
-        distance_travelled_bike         =  Results.avg_users([user for user in users                                      ], lambda x: x.distance_travelled_bike),
-        distance_travelled_bike_success =  Results.avg_users([user for user in users if not user.gave_up() and user.done()], lambda x: x.distance_travelled_bike),
-        distance_travelled_bike_failed  =  Results.avg_users([user for user in users if     user.gave_up()                ], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike         =  Results.avg_users([user for user in users                                                    ], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_success =  Results.avg_users([user for user in users if len(user.achieved_goals) > 0                    ], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_failed  =  Results.avg_users([user for user in users if user.angry > 0 and len(user.achieved_goals) == 0], lambda x: x.distance_travelled_bike),
 
         time_inside_system = sum([x.time_inside_system() for x in users]),
 
@@ -223,10 +223,10 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 10
+    repeat = 2
     global_seed = random()
     global_seed = 0.4294814496825895
-    averages = []
+    averages: list[MeanResults] = []
     for x in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
@@ -234,18 +234,93 @@ if __name__ == "__main__":
         print('=====---------=====')
         print(f"{SimUser.chance_to_follow_suggestion * 100}% on {repeat} times")
         try_round = []
+        cap = [0, 0]
         seed(global_seed)
         for _ in range(repeat):
             SimulationResults.reset()
             Point.clear_points()
             results = main()
             try_round.append(results)
+            for d in Main.docks:
+                if d.empty():
+                    cap[0] += 1
+                if d.full():
+                    cap[1] += 1
+        print("cap", cap)
         # Main.show()
         # input("Next? Press enter...")
-        # save_to_file_maps(Main.to_map())
+        save_to_file_maps(Main.to_map())
         print("Avg")
         avg_r = Results.average(try_round)
         # avg_r.print()
         averages.append(avg_r)
         print('=====---------=====')
+
+    CantPick= [[], []]
+    CantDeliver= [[], []]
+
+    angry_users = [[], []]
+
+    total_suggestion_made = [[], []]
+    total_suggestion_taken = [[], []]
+    total_suggestion_completed = [[], []]
+
+    completed_trips = [[], []]
+
+    distance_travelled_walk = [[], []]
+    distance_travelled_walk_success = [[], []]
+    distance_travelled_walk_failed = [[], []]
+
+    distance_travelled_bike = [[], []]
+    distance_travelled_bike_success = [[], []]
+    distance_travelled_bike_failed = [[], []]
+    for v in averages:
+        CantPick[0].append(v.CantPick[0])
+        CantPick[1].append(v.CantPick[1])
+        CantDeliver[0].append(v.CantDeliver[0])
+        CantDeliver[1].append(v.CantDeliver[1])
+
+        angry_users[0].append(v.angry_users[0])
+        angry_users[1].append(v.angry_users[1])
+        total_suggestion_made[0].append(v.total_suggestion_made[0])
+        total_suggestion_made[1].append(v.total_suggestion_made[1])
+        total_suggestion_taken[0].append(v.total_suggestion_taken[0])
+        total_suggestion_taken[1].append(v.total_suggestion_taken[1])
+        total_suggestion_completed[0].append(v.total_suggestion_completed[0])
+        total_suggestion_completed[1].append(v.total_suggestion_completed[1])
+
+        completed_trips[0].append(v.completed_trips[0])
+        completed_trips[1].append(v.completed_trips[1])
+
+        distance_travelled_walk[0].append(v.distance_travelled_walk[0])
+        distance_travelled_walk[1].append(v.distance_travelled_walk[1])
+        distance_travelled_walk_success[0].append(v.distance_travelled_walk_success[0])
+        distance_travelled_walk_success[1].append(v.distance_travelled_walk_success[1])
+        distance_travelled_walk_failed[0].append(v.distance_travelled_walk_failed[0])
+        distance_travelled_walk_failed[1].append(v.distance_travelled_walk_failed[1])
+
+        distance_travelled_bike[0].append(v.distance_travelled_bike[0])
+        distance_travelled_bike[1].append(v.distance_travelled_bike[1])
+        distance_travelled_bike_success[0].append(v.distance_travelled_bike_success[0])
+        distance_travelled_bike_success[1].append(v.distance_travelled_bike_success[1])
+        distance_travelled_bike_failed[0].append(v.distance_travelled_bike_failed[0])
+        distance_travelled_bike_failed[1].append(v.distance_travelled_bike_failed[1])
+
+    print("CantPick:", CantPick)
+    print("CantDeliver:", CantDeliver)
+
+    print("angry_users:", angry_users)
+    print("total_suggestion_made:", total_suggestion_made)
+    print("total_suggestion_taken:", total_suggestion_taken)
+    print("total_suggestion_completed:", total_suggestion_completed)
+
+    print("completed_trips:", completed_trips)
+
+    print("distance_travelled_walk:", distance_travelled_walk)
+    print("distance_travelled_walk_success:", distance_travelled_walk_success)
+    print("distance_travelled_walk_failed:", distance_travelled_walk_failed)
+
+    print("distance_travelled_bike:", distance_travelled_bike)
+    print("distance_travelled_bike_success:", distance_travelled_bike_success)
+    print("distance_travelled_bike_failed:", distance_travelled_bike_failed)
         
