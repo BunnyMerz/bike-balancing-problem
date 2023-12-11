@@ -8,7 +8,7 @@ passe = [112,118,132,129,121, 129,121,129,121,129, 132,129,132,129,132]
 
 points = {"years": years, "months": months, "passengers": passe}
 points = pd.DataFrame(points, columns=["years", "months", "passengers"])
-sns.pointplot(
+sns.barplot(
     data=points, x="years", y="passengers", hue='months',
     errorbar="se", capsize=.3
     )

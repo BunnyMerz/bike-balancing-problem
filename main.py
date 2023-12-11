@@ -29,7 +29,7 @@ def mean_confidence_interval(data, confidence=0.95):
     n = len(a)
     mean, se = np_mean(a), sem(a)
     error = se * t.ppf((1 + confidence) / 2., n-1)
-    return round(mean, 4), round(error, 4)
+    return round(mean, 4), round(se, 4)
 
 class Results:
     def __init__(
@@ -223,10 +223,11 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 2
+    repeat = 10
     global_seed = random()
     global_seed = 0.4294814496825895
-    for x in [1.0]:
+    averages = []
+    for x in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
         SimUser.chance_to_follow_suggestion = x
         log_print(SimUser.chance_to_follow_suggestion * 100)
         log_print(repeat)
@@ -239,11 +240,12 @@ if __name__ == "__main__":
             Point.clear_points()
             results = main()
             try_round.append(results)
-        Main.show()
+        # Main.show()
         # input("Next? Press enter...")
-        save_to_file_maps(Main.to_map())
+        # save_to_file_maps(Main.to_map())
         print("Avg")
         avg_r = Results.average(try_round)
-        avg_r.print()
+        # avg_r.print()
+        averages.append(avg_r)
         print('=====---------=====')
         
