@@ -52,6 +52,8 @@ class SimulationResults:
     total_suggestion_made = 0
     total_suggestion_taken = 0
     total_suggestion_completed = 0
+    walk_sugs = 0
+    bike_sugs = 0
     angry_users = 0
     gave_up = set()
 
@@ -61,6 +63,8 @@ class SimulationResults:
         cls.total_suggestion_taken = 0
         cls.total_suggestion_completed = 0
         cls.angry_users = 0
+        cls.walk_sugs = 0
+        cls.bike_sugs = 0
 
 GeoPosition = tuple[float, float, float]
 class SimUser:
@@ -193,7 +197,9 @@ class SimUser:
     def StateStart(self):
         print("Start")
         natural, suggestion = Main.find_starting_dock(*self.current_location)
-        if suggestion.initial_dest.suitable != []: SimulationResults.total_suggestion_made += 1
+        if suggestion.initial_dest.suitable != []:
+            SimulationResults.total_suggestion_made += 1
+            SimulationResults.walk_sugs += 1
         if (
             natural is not None
             and self.follow_suggestion(natural, suggestion)
@@ -244,6 +250,7 @@ class SimUser:
             natural, suggestion = Main.find_ending_dock(*self.dest, self.current_bike)
             if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
                 SimulationResults.total_suggestion_made += 1
+                SimulationResults.bike_sugs += 1
             if (
                 natural is not None
                 and suggestion.type == suggestion.OnlyEnd
@@ -292,6 +299,7 @@ class SimUser:
         natural, suggestion = Main.find_ending_dock(*self.dest, self.current_bike)
         if suggestion.type == suggestion.OnlyEnd and suggestion.end_dest.suitable != []:
             SimulationResults.total_suggestion_made += 1
+            SimulationResults.bike_sugs += 1
         if (
             natural is not None
             and suggestion.type == suggestion.OnlyEnd

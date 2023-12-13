@@ -39,6 +39,8 @@ class Results:
             distance_travelled_walk, distance_travelled_walk_success, distance_travelled_walk_failed,
             distance_travelled_bike, distance_travelled_bike_success, distance_travelled_bike_failed,
             time_inside_system,
+            walk_sugs,
+            bike_sugs,
             dock_capacity, histogram
         ) -> None:
         self.CantStart= CantStart
@@ -50,6 +52,8 @@ class Results:
         self.total_suggestion_made = total_suggestion_made
         self.total_suggestion_taken = total_suggestion_taken
         self.total_suggestion_completed = total_suggestion_completed
+        self.walk_sugs = walk_sugs
+        self.bike_sugs = bike_sugs
 
         self.total_trips = total_trips
         self.completed_trips = completed_trips
@@ -99,6 +103,8 @@ class Results:
             total_suggestion_made = mean_confidence_interval([r.total_suggestion_made for r in results]),
             total_suggestion_taken = mean_confidence_interval([r.total_suggestion_taken for r in results]),
             total_suggestion_completed = mean_confidence_interval([r.total_suggestion_completed for r in results]),
+            walk_sugs = mean_confidence_interval([r.walk_sugs for r in results]),
+            bike_sugs = mean_confidence_interval([r.bike_sugs for r in results]),
 
             total_trips=mean_confidence_interval([r.total_trips for r in results]),
             completed_trips=mean_confidence_interval([r.completed_trips for r in results]),
@@ -127,6 +133,8 @@ class Results:
         Total Angry Users: {self.angry_users}""")
         print(f"""  Suggestions:
             Made:      {self.total_suggestion_made}
+            Made W     {self.walk_sugs}
+            Made B:    {self.bike_sugs}
             Acepted:   {self.total_suggestion_taken}
             Completed: {self.total_suggestion_completed}""")
         
@@ -201,6 +209,8 @@ def main():
         total_suggestion_made = SimulationResults.total_suggestion_made,
         total_suggestion_taken = SimulationResults.total_suggestion_taken,
         total_suggestion_completed = SimulationResults.total_suggestion_completed,
+        walk_sugs = SimulationResults.walk_sugs,
+        bike_sugs = SimulationResults.bike_sugs,
 
         total_trips=len(users),
         completed_trips=len([x for x in users if x.state == x.Idle]),
@@ -210,8 +220,8 @@ def main():
         distance_travelled_walk_failed =  Results.avg_users([user for user in users if user.angry > 0 and len(user.achieved_goals) == 0], lambda x: x.distance_travelled_walk),
 
         distance_travelled_bike         =  Results.avg_users([user for user in users                                                    ], lambda x: x.distance_travelled_bike),
-        distance_travelled_bike_success =  Results.avg_users([user for user in users if len(user.achieved_goals) > 0                    ], lambda x: x.distance_travelled_bike),
-        distance_travelled_bike_failed  =  Results.avg_users([user for user in users if user.angry > 0 and len(user.achieved_goals) == 0], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_success =  Results.avg_users([user for user in users if len(user.achieved_goals) > 0 and user.distance_travelled_bike > 0], lambda x: x.distance_travelled_bike),
+        distance_travelled_bike_failed  =  Results.avg_users([user for user in users if user.angry > 0 and len(user.achieved_goals) == 0 and user.distance_travelled_bike > 0], lambda x: x.distance_travelled_bike),
 
         time_inside_system = sum([x.time_inside_system() for x in users]),
 
@@ -223,7 +233,7 @@ def main():
     return r
 
 if __name__ == "__main__":
-    repeat = 2
+    repeat = 10
     global_seed = random()
     global_seed = 0.4294814496825895
     averages: list[MeanResults] = []
@@ -249,10 +259,10 @@ if __name__ == "__main__":
         print("cap", cap)
         # Main.show()
         # input("Next? Press enter...")
-        save_to_file_maps(Main.to_map())
+        # save_to_file_maps(Main.to_map())
         print("Avg")
         avg_r = Results.average(try_round)
-        # avg_r.print()
+        avg_r.print()
         averages.append(avg_r)
         print('=====---------=====')
 
